@@ -1,9 +1,11 @@
-const App = () => {
+import Attendance from "./Attendance";
+
+function App () {
   return (
-    <>
-      <h1>Welcome to TeachGrid</h1>
-    </>
+    <div>
+      <Attendance/>
+    </div>
   )
 }
 
-export default App
+export default App;
