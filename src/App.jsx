@@ -4,6 +4,7 @@ import Attendance from "./Attendance";
 function App () {
   return (
     <div>
+      
       <AdminDashboard/>
       {/* <Attendance/> */}
     </div>
