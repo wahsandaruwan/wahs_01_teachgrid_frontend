@@ -1,15 +1,15 @@
 import React from "react";
-import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import Cardviews from "./Cardviews";
 import Reliefduties from "./Reliefduties";
 import Announcements from "./Announcements";
+import TeachNavigationBar from "./TeachNavigationbar";
 export default function Dashboard() {
 return (
 
-// sidebar include here
+// navigation bar include here
       <div className="flex h-screen bg-gray-100">
-        <Sidebar/>
+        <TeachNavigationBar/>
 
     <div className="flex-1 flex flex-col">
       <TopBar/>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Home, Calendar, ClipboardList, Users, Bell, Settings, LogOut } from "lucide-react";
 
-export default function Sidebar() {
+export default function TeachNavigationBar() {
   const [activeItem, setActiveItem] = useState(""); // Track which button is active
 
   return (

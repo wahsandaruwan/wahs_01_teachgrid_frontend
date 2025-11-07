@@ -27,8 +27,8 @@ export default function Announcements() {
         </div>
       </div>
 
-      <button className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100">
-        View All
+      <button className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
+        View All Announcements
       </button>
     </div>
   );
