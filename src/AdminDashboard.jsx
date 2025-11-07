@@ -1,5 +1,5 @@
 import React from "react";
-import NavigationBar from "./NavigationBar.jsx";
+import NavigationBar from "./Admin_NavigationBar.jsx";
 import {
   Users,
   Bell,

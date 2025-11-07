@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Users,
   Bell,
+  ChartBarBig,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -41,6 +42,7 @@ export default function NavigationBar() {
             { name: "Leave Management", icon: <ClipboardList size={20} /> },
             { name: "Relief Duty", icon: <Users size={20} /> },
             { name: "Announcement", icon: <Bell size={20} /> },
+            { name: "Report", icon: < ChartBarBig size={20} /> }, // ✅ Updated
           ].map((item) => (
             <button
               key={item.name}

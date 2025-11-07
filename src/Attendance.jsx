@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import NavigationBar from "./NavigationBar.jsx";
+import NavigationBar from "./Teacher_NavigationBar.jsx";
 
 const attendanceData = [
   { date: "2025-10-15", status: "Present", checkIn: "7:20 AM", checkOut: "1.35 PM" },
