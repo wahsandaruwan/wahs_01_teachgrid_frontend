@@ -24,7 +24,7 @@ export default function Announcements() {
       {/*main topic*/}
       <div>
         <h3 className="font-semibold text-lg flex items-center gap-2">
-          <Megaphone size={20} className="text-purple-600" />
+          <Megaphone size={20} />
           Latest Announcements
         </h3>
         <p className="text-gray-500 text-sm">Important updates from administration</p>
