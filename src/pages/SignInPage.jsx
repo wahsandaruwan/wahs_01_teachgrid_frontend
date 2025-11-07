@@ -47,6 +47,7 @@ const SignInPage = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setGeneralError("");
 
     try {
       const response = await fetch(`${apiUrl}/api/auth/login`, {
@@ -56,24 +57,28 @@ const SignInPage = () => {
       });
 
       const data = await response.json();
-      console.log("Role from backend:", data.role);
       setLoading(false);
 
-      if (response.ok) {
+      if (data.success) {
         const roleFromBackend = data.role?.toLowerCase();
+
+        if (roleFromBackend !== role.toLowerCase()) {
+          setGeneralError("Selected role does not match your account role.");
+          return;
+        }
+
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", roleFromBackend);
 
-        if (roleFromBackend === "teacher") {
-          navigate("/teacher-dashboard");
-        } else if (roleFromBackend === "admin") {
-          navigate("/admin-dashboard");
-        } else {
-          setGeneralError("Incorrect password. Please try again.");
-        }
+        if (roleFromBackend === "teacher") navigate("/teacher-dashboard");
+        else if (roleFromBackend === "admin") navigate("/admin-dashboard");
       } else {
-        setGeneralError(data.error?.message || "Invalid credentials.");
+        let message = data.message || "Login failed. Please try again.";
+        if (message.includes("email")) message = "Invalid email! User not found.";
+        if (message.includes("Password")) message = "Invalid password!";
+        setGeneralError(message);
       }
+
     } catch (error) {
       console.error("Login Error:", error);
       setLoading(false);
