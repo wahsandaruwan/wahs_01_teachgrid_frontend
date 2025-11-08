@@ -1,7 +1,10 @@
 import React from "react";
 import { TrendingUp, CheckCircle, Users, FileText } from "lucide-react";  
+import { useNavigate } from "react-router-dom";
 
 export default function Cardviews() {
+  const navigate = useNavigate (); {/*Hook to programmatically navigate*/}
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
@@ -25,7 +28,7 @@ export default function Cardviews() {
           <p className="text-gray-600 font-medium">Approved Leaves</p>
           <CheckCircle size={20} className="text-gray-500" />
         </div>
-        <h2 className="text-3xl font-bold mt-3">3/5</h2>
+        <h2 className="text-3xl font-bold mt-3">3/5</h2> 
         <p className="text-sm text-gray-500 mt-1">This academic year</p>
       </div>
 
@@ -47,12 +50,16 @@ export default function Cardviews() {
         </div>
 
     {/*apply leave button*/}
-        <button className="w-full mt-4 border border-gray-300 rounded-lg p-2 hover:bg-gray-100">
+        <button 
+        onClick={() => navigate("/leave")}
+        className="w-full mt-4 border border-gray-300 rounded-lg p-2 hover:bg-gray-100">
           Apply Leave
         </button>
 
     {/*view attendance button*/}
-        <button className="w-full mt-3 border border-gray-300 rounded-lg p-2 hover:bg-gray-100">
+        <button 
+        onClick={() => navigate("/attendance")} 
+        className="w-full mt-3 border border-gray-300 rounded-lg p-2 hover:bg-gray-100">
           View Attendance
         </button>
       </div>

@@ -1,7 +1,10 @@
 import React from "react";
 import { Megaphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Announcements() {
+const navigate = useNavigate(); {/*Hook to programmatically navigate*/}
+
   {/*change lable value*/}
     const priority = "High";
 
@@ -63,7 +66,9 @@ export default function Announcements() {
       </div>
 
     {/*view all button*/}
-      <button className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
+      <button 
+       onClick={() => navigate("/announcement")}
+      className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
         View All Announcements
       </button>
     </div>

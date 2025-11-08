@@ -1,7 +1,10 @@
 import React from "react";
 import { CalendarClock,  Clock} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Reliefduties() {
+const navigate = useNavigate(); {/* Hook to programmatically navigate*/}
+
   return (
     <div className="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
 
@@ -37,7 +40,9 @@ export default function Reliefduties() {
       </div>
 
     {/*view all button*/}
-      <button className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
+      <button 
+      onClick={() => navigate("/relief")}
+      className="mt-6 w-full border border-gray-300 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
         View All Relief Duties
       </button>
     </div>
