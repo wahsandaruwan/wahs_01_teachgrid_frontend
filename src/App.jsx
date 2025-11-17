@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useUser } from './contexts/UserContext'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -60,7 +61,8 @@ const App = () => {
         }
       />
     </Routes>
+
   )
 }
 
-export default App
+export default App;
