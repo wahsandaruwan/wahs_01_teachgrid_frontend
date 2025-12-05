@@ -12,7 +12,7 @@ import Settings from './pages/admin/Settings'
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import TeacherDashboard from './pages/teacher/Dashboard'
 import TeacherAttendance from './pages/teacher/Attendance'
-import TeacherLeaveManagement from './pages/teacher/LeaveManagement'
+import TeacherLeaveManagement from './pages/teacher/leave/LeaveManagement'
 import TeacherReliefDuty from './pages/teacher/ReliefDuty'
 import TeacherAnnouncements from './pages/teacher/Announcements'
 import TeacherSettings from './pages/teacher/Settings'
@@ -78,4 +78,4 @@ const App = () => {
   )
 }
 
-export default App
+export default App;
