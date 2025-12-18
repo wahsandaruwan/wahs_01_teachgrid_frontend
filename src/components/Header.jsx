@@ -24,7 +24,13 @@ const Header = ({ title }) => {
         </div>
 
         <div className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold uppercase">
-          {user?.avatar || 'U'}
+          {(user?.name || 'U')
+            .split(' ')
+            .filter(Boolean)
+            .map((part) => part.charAt(0))
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()}
         </div>
       </div>
     </header>

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom"; 
 import TechGridLogo from "../assets/TechGrid.png";
 import { useUser } from "../contexts/UserContext"; 
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const { setUser } = useUser(); 
+  const { refreshUser } = useUser(); 
 
   // Backend URL 
  const apiUrl = "http://localhost:3301";
@@ -57,6 +57,7 @@ const SignInPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, role }),
+        credentials: "include", // required so the http-only JWT cookie is set
       });
 
       const data = await response.json();
@@ -65,25 +66,29 @@ const SignInPage = () => {
       if (data.success) {
         const roleFromBackend = data.role?.toLowerCase();
 
-        if (roleFromBackend !== role.toLowerCase()) {
+        if (roleFromBackend && roleFromBackend !== role.toLowerCase()) {
           setGeneralError("Selected role does not match your account role.");
           return;
         }
 
-        // Save token & role
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", roleFromBackend);
+        // Hydrate the user context from the backend profile
+        let userFromDb = null;
+        try {
+          userFromDb = await refreshUser();
+        } catch (err) {
+          console.error("Failed to refresh user after login", err);
+        }
 
-        
-        setUser({
-          email: data.email,
-          role: roleFromBackend,
-          token: data.token,
-        });
+        if (!userFromDb) {
+          setGeneralError("Unable to load your profile. Please try again.");
+          return;
+        }
 
-        //Navigate to dashboard
-        if (roleFromBackend === "teacher") navigate("/teacher/dashboard");
-        else if (roleFromBackend === "admin") navigate("/admin/dashboard");
+        // Navigate based on the authoritative role from the database
+        const finalRole = (userFromDb.role || roleFromBackend || "").toLowerCase();
+        if (finalRole === "teacher") navigate("/teacher/dashboard");
+        else if (finalRole === "admin") navigate("/admin/dashboard");
+        else navigate("/");
       } else {
         let message = data.message || "Login failed. Please try again.";
         if (message.toLowerCase().includes("email")) message = "Invalid email! User not found.";
