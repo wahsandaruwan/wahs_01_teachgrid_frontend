@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
 import TechGridLogo from "../assets/TechGrid.png";
+import { useUser } from "../contexts/UserContext"; 
 
 const SignInPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useUser(); 
 
-  // Backend URL from environment variable
-  const apiUrl = import.meta.env.VITE_API_URL;
+  // Backend URL 
+ const apiUrl = "http://localhost:3301";
+
 
   // States
   const [email, setEmail] = useState("");
@@ -67,18 +70,26 @@ const SignInPage = () => {
           return;
         }
 
+        // Save token & role
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", roleFromBackend);
 
-        if (roleFromBackend === "teacher") navigate("/teacher-dashboard");
-        else if (roleFromBackend === "admin") navigate("/admin-dashboard");
+        
+        setUser({
+          email: data.email,
+          role: roleFromBackend,
+          token: data.token,
+        });
+
+        //Navigate to dashboard
+        if (roleFromBackend === "teacher") navigate("/teacher/dashboard");
+        else if (roleFromBackend === "admin") navigate("/admin/dashboard");
       } else {
         let message = data.message || "Login failed. Please try again.";
-        if (message.includes("email")) message = "Invalid email! User not found.";
-        if (message.includes("Password")) message = "Invalid password!";
+        if (message.toLowerCase().includes("email")) message = "Invalid email! User not found.";
+        if (message.toLowerCase().includes("password")) message = "Invalid password!";
         setGeneralError(message);
       }
-
     } catch (error) {
       console.error("Login Error:", error);
       setLoading(false);
@@ -174,14 +185,7 @@ const SignInPage = () => {
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <Link
-            to="/forgot-password"
-            className="text-sm text-indigo-600 font-medium hover:underline"
-          >
-            Forgot Password?
-          </Link>
-        </div>
+       
       </div>
     </div>
   );
