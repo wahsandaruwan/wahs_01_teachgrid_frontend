@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useUser } from '../contexts/UserContext'
 import {
   Home,
@@ -19,14 +19,21 @@ const navItems = [
 ]
 
 const TeacherNavbar = () => {
-  const { user } = useUser()
+  const { user, logout } = useUser()
+  const navigate = useNavigate()
 
   return (
     <aside className="w-64 bg-white shadow-lg p-6 flex flex-col justify-between min-h-screen">
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="h-12 w-12 rounded-full bg-gray-900 text-white flex items-center justify-center text-lg font-semibold uppercase">
-            {user?.avatar || 'TN'}
+            {(user?.name || 'T')
+              .split(' ')
+              .filter(Boolean)
+              .map((part) => part.charAt(0))
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
           </div>
           <div>
             <h3 className="font-semibold text-gray-800">{user?.name || 'Teacher'}</h3>
@@ -70,7 +77,14 @@ const TeacherNavbar = () => {
           <Settings size={18} /> Settings
         </NavLink>
 
-        <button className="flex items-center gap-3 p-2 text-red-600 hover:bg-red-100 rounded-md w-full text-left">
+        <button
+          type="button"
+          onClick={async () => {
+            await logout()
+            navigate('/', { replace: true })
+          }}
+          className="flex items-center gap-3 p-2 text-red-600 hover:bg-red-100 rounded-md w-full text-left"
+        >
           <LogOut size={18} /> Sign Out
         </button>
       </div>
@@ -79,5 +93,6 @@ const TeacherNavbar = () => {
 }
 
 export default TeacherNavbar
+
 
 
