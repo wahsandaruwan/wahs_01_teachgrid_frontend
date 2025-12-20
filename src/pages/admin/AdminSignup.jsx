@@ -1,42 +1,44 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import TechGridLogo from "../../assets/TechGrid.png";
 
 const AdminSignup = () => {
-  const navigate = useNavigate();
   const apiUrl = "http://localhost:3301";
 
   // States
   const [role, setRole] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dob, setDob] = useState("");
+  const [name, setName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [address, setAddress] = useState("");
-  const [subject, setSubject] = useState("");
-  const [contact, setContact] = useState("");
+  const [phoneNum, setPhoneNum] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [createdUserName, setCreatedUserName] = useState("");
 
   // Error states
   const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
 
   const validateForm = () => {
     const newErrors = {};
+    setGeneralError("");
 
     if (!role) newErrors.role = "Please select a role.";
-    if (!firstName) newErrors.firstName = "First Name is required.";
-    if (!lastName) newErrors.lastName = "Last Name is required.";
-    if (!dob) newErrors.dob = "Date of Birth is required.";
+    if (!name) newErrors.name = "Name is required.";
+    if (!dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required.";
     if (!address) newErrors.address = "Address is required.";
-    if (role === "Teacher" && !subject)
-      newErrors.subject = "Subject is required.";
-    if (!contact) newErrors.contact = "Contact Number is required.";
+    if (!phoneNum) newErrors.phoneNum = "Contact Number is required.";
+    else if (!/^\d+$/.test(phoneNum)) {
+      newErrors.phoneNum = "Contact Number must contain only digits.";
+    }
     if (!email) newErrors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(email))
       newErrors.email = "Invalid email format.";
     if (!password) newErrors.password = "Password is required.";
+    else if (password.length < 6)
+      newErrors.password = "Password must be at least 6 characters.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -47,37 +49,57 @@ const AdminSignup = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setGeneralError("");
 
     try {
+      // Convert phoneNum to number and dateOfBirth to Date
+      const phoneNumber = parseInt(phoneNum, 10);
+      if (isNaN(phoneNumber)) {
+        setErrors({ phoneNum: "Contact Number must be a valid number." });
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role,
-          firstName,
-          lastName,
-          dob,
-          address,
-          subject: role === "Teacher" ? subject : "",
-          contact,
+          name,
           email,
           password,
+          phoneNum: phoneNumber,
+          role: role.toLowerCase(),
+          dateOfBirth,
+          address,
         }),
+        // Do NOT include credentials - admin should not log in as the created user
       });
 
       const data = await response.json();
       setLoading(false);
 
       if (data.success) {
-        alert("Account created successfully! Please login.");
-        navigate("/"); // ✅ Updated path for SignInPage
+        // Store created user's name for success message
+        setCreatedUserName(name);
+        // Show success dialog
+        setShowSuccessDialog(true);
+        // Clear form
+        setRole("");
+        setName("");
+        setDateOfBirth("");
+        setAddress("");
+        setPhoneNum("");
+        setEmail("");
+        setPassword("");
+        setErrors({});
+        setGeneralError("");
       } else {
-        alert(data.message || "Registration failed. Try again.");
+        setGeneralError(data.message || "Registration failed. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);
       setLoading(false);
-      alert("Server connection failed. Please try again later.");
+      setGeneralError("Server connection failed. Please try again later.");
     }
   };
 
@@ -97,11 +119,15 @@ const AdminSignup = () => {
 
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
         <h2 className="text-2xl font-bold text-center text-gray-800">
-          Create Account
+          Create User Account
         </h2>
         <p className="text-sm text-center text-gray-500 mb-4">
-          Fill in your details to register
+          Fill in the user's details to create an account
         </p>
+
+        {generalError && (
+          <p className="text-red-500 text-sm mb-3 text-center">{generalError}</p>
+        )}
 
         <form onSubmit={handleSignUp} className="space-y-4">
           {/* Role */}
@@ -125,44 +151,23 @@ const AdminSignup = () => {
             )}
           </div>
 
-          {/* First Name */}
+          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              First Name
+              Full Name
             </label>
             <input
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
-                errors.firstName ? "border-red-500" : "border-gray-300"
+                errors.name ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your first name"
+              placeholder="Enter user's full name"
             />
-            {errors.firstName && (
+            {errors.name && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.firstName}
-              </p>
-            )}
-          </div>
-
-          {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Last Name
-            </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
-                errors.lastName ? "border-red-500" : "border-gray-300"
-              } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your last name"
-            />
-            {errors.lastName && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.lastName}
+                {errors.name}
               </p>
             )}
           </div>
@@ -174,14 +179,14 @@ const AdminSignup = () => {
             </label>
             <input
               type="date"
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
-                errors.dob ? "border-red-500" : "border-gray-300"
+                errors.dateOfBirth ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
             />
-            {errors.dob && (
-              <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+            {errors.dateOfBirth && (
+              <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>
             )}
           </div>
 
@@ -197,7 +202,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.address ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your address"
+              placeholder="Enter user's address"
             />
             {errors.address && (
               <p className="text-red-500 text-xs mt-1">
@@ -206,46 +211,23 @@ const AdminSignup = () => {
             )}
           </div>
 
-          {/* Subject */}
-          {role === "Teacher" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Subject
-              </label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
-                  errors.subject ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-                placeholder="Enter your subject"
-              />
-              {errors.subject && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.subject}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Contact */}
+          {/* Contact Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Contact Number
             </label>
             <input
               type="tel"
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
+              value={phoneNum}
+              onChange={(e) => setPhoneNum(e.target.value)}
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
-                errors.contact ? "border-red-500" : "border-gray-300"
+                errors.phoneNum ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your contact number"
+              placeholder="Enter user's contact number (digits only)"
             />
-            {errors.contact && (
+            {errors.phoneNum && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.contact}
+                {errors.phoneNum}
               </p>
             )}
           </div>
@@ -262,7 +244,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.email ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your email"
+              placeholder="Enter user's email address"
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">
@@ -283,7 +265,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your password"
+              placeholder="Set initial password for user"
             />
             <span
               className="absolute right-3 top-9 cursor-pointer text-gray-500"
@@ -311,17 +293,47 @@ const AdminSignup = () => {
             {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
-
-        {/* Sign In */}
-        <p className="text-sm text-center text-gray-500 mt-4">
-          Already have an account?{" "}
-          <Link to="/" className="text-black font-semibold hover:underline">
-            Sign In
-          </Link>
-        </p>
       </div>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Account Created Successfully
+              </h3>
+              <p className="text-gray-600 mb-6">
+                The account for <span className="font-semibold">{createdUserName}</span> has been created successfully.
+              </p>
+              <button
+                onClick={() => setShowSuccessDialog(false)}
+                className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default AdminSignup;
+
