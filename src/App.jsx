@@ -10,6 +10,7 @@ import LeaveManagement from './pages/admin/LeaveManagement';
 import Announcements from './pages/admin/Announcements';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
+import AdminSignup from './pages/admin/AdminSignup';
 import TeacherLayout from './pages/teacher/TeacherLayout';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherAttendance from './pages/teacher/Attendance';
@@ -58,6 +59,7 @@ const App = () => {
         <Route path="announcements" element={<Announcements />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="signup" element={<AdminSignup />} />
       </Route>
 
       {/* Teacher Routes */}
