@@ -1,11 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import TechGridLogo from "../../assets/TechGrid.png";
-import { useUser } from "../../contexts/UserContext";
 
 const AdminSignup = () => {
-  const navigate = useNavigate();
-  const { refreshUser } = useUser();
   const apiUrl = "http://localhost:3301";
 
   // States
@@ -18,6 +14,8 @@ const AdminSignup = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [createdUserName, setCreatedUserName] = useState("");
 
   // Error states
   const [errors, setErrors] = useState({});
@@ -74,29 +72,27 @@ const AdminSignup = () => {
           dateOfBirth,
           address,
         }),
-        credentials: "include", // Required for JWT cookie to be set
+        // Do NOT include credentials - admin should not log in as the created user
       });
 
       const data = await response.json();
       setLoading(false);
 
       if (data.success) {
-        // Backend sets JWT cookie, so refresh user context
-        try {
-          await refreshUser();
-        } catch (err) {
-          console.error("Failed to refresh user after registration", err);
-        }
-
-        // Navigate based on role
-        const roleLower = role.toLowerCase();
-        if (roleLower === "admin") {
-          navigate("/admin/dashboard");
-        } else if (roleLower === "teacher") {
-          navigate("/teacher/dashboard");
-        } else {
-          navigate("/");
-        }
+        // Store created user's name for success message
+        setCreatedUserName(name);
+        // Show success dialog
+        setShowSuccessDialog(true);
+        // Clear form
+        setRole("");
+        setName("");
+        setDateOfBirth("");
+        setAddress("");
+        setPhoneNum("");
+        setEmail("");
+        setPassword("");
+        setErrors({});
+        setGeneralError("");
       } else {
         setGeneralError(data.message || "Registration failed. Please try again.");
       }
@@ -123,10 +119,10 @@ const AdminSignup = () => {
 
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
         <h2 className="text-2xl font-bold text-center text-gray-800">
-          Create Account
+          Create User Account
         </h2>
         <p className="text-sm text-center text-gray-500 mb-4">
-          Fill in your details to register
+          Fill in the user's details to create an account
         </p>
 
         {generalError && (
@@ -167,7 +163,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.name ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your full name"
+              placeholder="Enter user's full name"
             />
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">
@@ -206,7 +202,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.address ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your address"
+              placeholder="Enter user's address"
             />
             {errors.address && (
               <p className="text-red-500 text-xs mt-1">
@@ -227,7 +223,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.phoneNum ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your contact number (digits only)"
+              placeholder="Enter user's contact number (digits only)"
             />
             {errors.phoneNum && (
               <p className="text-red-500 text-xs mt-1">
@@ -248,7 +244,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.email ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your email"
+              placeholder="Enter user's email address"
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">
@@ -269,7 +265,7 @@ const AdminSignup = () => {
               className={`mt-1 w-full px-3 py-2 bg-gray-100 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
-              placeholder="Enter your password"
+              placeholder="Set initial password for user"
             />
             <span
               className="absolute right-3 top-9 cursor-pointer text-gray-500"
@@ -298,6 +294,43 @@ const AdminSignup = () => {
           </button>
         </form>
       </div>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Account Created Successfully
+              </h3>
+              <p className="text-gray-600 mb-6">
+                The account for <span className="font-semibold">{createdUserName}</span> has been created successfully.
+              </p>
+              <button
+                onClick={() => setShowSuccessDialog(false)}
+                className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
