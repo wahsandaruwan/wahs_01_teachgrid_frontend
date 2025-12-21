@@ -98,15 +98,16 @@ const navItems = [
 ]
 
 const AdminNavbar = () => {
-  const { user } = useUser()
+  const { user, logout } = useUser()
   const navigate = useNavigate()
 
   if (!user || user.role !== 'admin') {
     return null
   }
 
-  const handleSignOut = () => {
-    navigate('/sign-in', { replace: true })
+  const handleSignOut = async () => {
+    await logout()
+    navigate('/', { replace: true })
   }
 
   return (
@@ -117,7 +118,13 @@ const AdminNavbar = () => {
 
       <div className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white">
-          {user.avatar}
+          {(user.name || 'U')
+            .split(' ')
+            .filter(Boolean)
+            .map((part) => part.charAt(0))
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()}
         </div>
         <h3 className="mt-4 text-lg font-semibold text-slate-900">{user.name}</h3>
         <p className="text-sm text-slate-500">{user.email}</p>

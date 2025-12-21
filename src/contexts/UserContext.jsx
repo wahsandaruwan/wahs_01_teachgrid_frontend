@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 
 const UserContext = createContext()
@@ -7,19 +7,12 @@ const UserContext = createContext()
 const getNodeEnv = (key) =>
   typeof globalThis !== 'undefined' && globalThis.process?.env ? globalThis.process.env[key] : undefined
 
+// Default to the known local backend if no env var is provided
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ||
   import.meta.env?.REACT_APP_API_BASE_URL ||
   getNodeEnv('REACT_APP_API_BASE_URL') ||
-  ''
-
-const mockUser = {
-  id: '1',
-  name: 'Sarah Johnson',
-  email: 'admin@teachgrid.edu',
-  role: 'teacher',
-  avatar: 'SJ'
-}
+  'http://localhost:3301'
 
 export const useUser = () => {
   const context = useContext(UserContext)
@@ -33,40 +26,70 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchCurrentUser = useCallback(
+    async (signal) => {
+      try {
+        const { data } = await axios.get(`${API_BASE_URL}/api/auth/me`, {
+          withCredentials: true,
+          signal
+        })
+
+        if (data?.success && data.user) {
+          setUser(data.user)
+          return data.user
+        }
+
+        setUser(null)
+        return null
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          return null
+        }
+
+        console.error('Failed to fetch current user', error)
+        setUser(null)
+        return null
+      }
+    },
+    []
+  )
+
+  const logout = useCallback(async () => {
+    try {
+      await axios.post(
+        `${API_BASE_URL}/api/auth/logout`,
+        {},
+        {
+          withCredentials: true
+        }
+      )
+    } catch (error) {
+      console.error('Logout request failed', error)
+    } finally {
+      setUser(null)
+    }
+  }, [])
+
   useEffect(() => {
     const controller = new AbortController()
 
-    const fetchUser = async () => {
-      // Bail out early if the API base URL is not configured yet.
-      if (!API_BASE_URL) {
-        setUser(mockUser)
-        setLoading(false)
-        return
-      }
-
-      try {
-        const { data } = await axios.get(`${API_BASE_URL}/auth/me`, {
-          withCredentials: true,
-          signal: controller.signal
-        })
-        setUser(data)
-      } catch (error) {
-        console.warn('Falling back to mock admin user', error)
-        setUser(mockUser)
-      } finally {
-        setLoading(false)
-      }
+    const bootstrapAuth = async () => {
+      await fetchCurrentUser(controller.signal)
+      setLoading(false)
     }
 
-    fetchUser()
+    bootstrapAuth()
 
     return () => controller.abort()
-  }, [])
+  }, [fetchCurrentUser])
+
+  const refreshUser = useCallback(() => fetchCurrentUser(), [fetchCurrentUser])
 
   const value = {
     user,
-    setUser,
-    loading
+    loading,
+    refreshUser,
+    logout
   }
 
   return (
