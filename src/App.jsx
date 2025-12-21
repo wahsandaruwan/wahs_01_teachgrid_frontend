@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'; // useEffect ඇතුළත් කළා
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext';
 import SignInPage from './pages/SignInPage';
@@ -10,6 +11,7 @@ import LeaveManagement from './pages/admin/LeaveManagement';
 import Announcements from './pages/admin/Announcements';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
+import AdminSignup from './pages/admin/AdminSignup';
 import TeacherLayout from './pages/teacher/TeacherLayout';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherAttendance from './pages/teacher/Attendance';
@@ -30,15 +32,25 @@ const PrivateRoute = ({ children, role }) => {
   }
 
   if (!user) return <Navigate to="/" replace />;
- if (role && user.role.toLowerCase() !== role.toLowerCase()) return <NotAuthorized />;
+  if (role && user.role.toLowerCase() !== role.toLowerCase()) return <NotAuthorized />;
 
   return children;
 };
 
 const App = () => {
+  
+  //Check Dark Mode status when the app starts
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   return (
     <Routes>
-    
       <Route path="/" element={<SignInPage />} />
 
       {/* Admin Routes */}
@@ -58,6 +70,7 @@ const App = () => {
         <Route path="announcements" element={<Announcements />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="signup" element={<AdminSignup />} />
       </Route>
 
       {/* Teacher Routes */}
