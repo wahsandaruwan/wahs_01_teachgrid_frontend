@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'; // useEffect ඇතුළත් කළා
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext';
 import SignInPage from './pages/SignInPage';
@@ -31,15 +32,25 @@ const PrivateRoute = ({ children, role }) => {
   }
 
   if (!user) return <Navigate to="/" replace />;
- if (role && user.role.toLowerCase() !== role.toLowerCase()) return <NotAuthorized />;
+  if (role && user.role.toLowerCase() !== role.toLowerCase()) return <NotAuthorized />;
 
   return children;
 };
 
 const App = () => {
+  
+  // Check Dark Mode status when the app starts
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   return (
     <Routes>
-    
       <Route path="/" element={<SignInPage />} />
 
       {/* Admin Routes */}

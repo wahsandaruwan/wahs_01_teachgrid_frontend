@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import TechGridLogo from "../../assets/TechGrid.png";
 
 const AdminSignup = () => {
-  const apiUrl = "http://localhost:3301";
+  // Use environment variable for API URL
+  const apiUrl = import.meta.env.VITE_API_URL; 
 
-  // States
+  // =========================
+  // States for form fields
+  // =========================
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -12,47 +15,74 @@ const AdminSignup = () => {
   const [phoneNum, setPhoneNum] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [createdUserName, setCreatedUserName] = useState("");
 
+  // =========================
+  // UI states
+  // =========================
+  const [showPassword, setShowPassword] = useState(false); // toggle password visibility
+  const [loading, setLoading] = useState(false); // loading state during API call
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false); // show success popup
+  const [createdUserName, setCreatedUserName] = useState(""); // store name for success message
+
+  // =========================
   // Error states
-  const [errors, setErrors] = useState({});
-  const [generalError, setGeneralError] = useState("");
+  // =========================
+  const [errors, setErrors] = useState({}); // field-specific errors
+  const [generalError, setGeneralError] = useState(""); // general API/server error
 
+  // =========================
+  // Form Validation
+  // =========================
   const validateForm = () => {
     const newErrors = {};
-    setGeneralError("");
+    setGeneralError(""); // reset general error
 
+    // Role validation
     if (!role) newErrors.role = "Please select a role.";
+
+    // Name validation
     if (!name) newErrors.name = "Name is required.";
+
+    // Date of Birth validation
     if (!dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required.";
+
+    // Address validation
     if (!address) newErrors.address = "Address is required.";
+
+    // Phone number validation
     if (!phoneNum) newErrors.phoneNum = "Contact Number is required.";
     else if (!/^\d+$/.test(phoneNum)) {
       newErrors.phoneNum = "Contact Number must contain only digits.";
     }
+
+    // Email validation
     if (!email) newErrors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(email))
       newErrors.email = "Invalid email format.";
+
+    // Password validation
     if (!password) newErrors.password = "Password is required.";
     else if (password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0; // form is valid if no errors
   };
 
+  // =========================
+  // Handle form submission
+  // =========================
   const handleSignUp = async (e) => {
     e.preventDefault();
+
+    // validate before sending
     if (!validateForm()) return;
 
     setLoading(true);
     setGeneralError("");
 
     try {
-      // Convert phoneNum to number and dateOfBirth to Date
+      // Convert phone number to integer
       const phoneNumber = parseInt(phoneNum, 10);
       if (isNaN(phoneNumber)) {
         setErrors({ phoneNum: "Contact Number must be a valid number." });
@@ -60,6 +90,7 @@ const AdminSignup = () => {
         return;
       }
 
+      // Send POST request to API
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,18 +103,17 @@ const AdminSignup = () => {
           dateOfBirth,
           address,
         }),
-        // Do NOT include credentials - admin should not log in as the created user
       });
 
       const data = await response.json();
       setLoading(false);
 
       if (data.success) {
-        // Store created user's name for success message
-        setCreatedUserName(name);
         // Show success dialog
+        setCreatedUserName(name);
         setShowSuccessDialog(true);
-        // Clear form
+
+        // Reset form fields
         setRole("");
         setName("");
         setDateOfBirth("");
@@ -94,6 +124,7 @@ const AdminSignup = () => {
         setErrors({});
         setGeneralError("");
       } else {
+        // Display API error message
         setGeneralError(data.message || "Registration failed. Please try again.");
       }
     } catch (error) {
@@ -105,6 +136,7 @@ const AdminSignup = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#E5F0FF] px-4 py-6">
+      {/* Logo Section */}
       <div className="text-center mb-6">
         <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-xl overflow-hidden shadow-lg border-2 border-gray-200 flex items-center justify-center">
           <img
@@ -117,6 +149,7 @@ const AdminSignup = () => {
         <p className="text-sm text-gray-500">Teacher Management System</p>
       </div>
 
+      {/* Form Container */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
         <h2 className="text-2xl font-bold text-center text-gray-800">
           Create User Account
@@ -125,16 +158,18 @@ const AdminSignup = () => {
           Fill in the user's details to create an account
         </p>
 
+        {/* Display general error if any */}
         {generalError && (
           <p className="text-red-500 text-sm mb-3 text-center">{generalError}</p>
         )}
 
+        {/* =========================
+            Form Fields
+        ========================= */}
         <form onSubmit={handleSignUp} className="space-y-4">
           {/* Role */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -146,16 +181,12 @@ const AdminSignup = () => {
               <option value="Teacher">Teacher</option>
               <option value="Admin">Admin</option>
             </select>
-            {errors.role && (
-              <p className="text-red-500 text-xs mt-1">{errors.role}</p>
-            )}
+            {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
           </div>
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Full Name</label>
             <input
               type="text"
               value={name}
@@ -165,18 +196,12 @@ const AdminSignup = () => {
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
               placeholder="Enter user's full name"
             />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.name}
-              </p>
-            )}
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
           {/* Date of Birth */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Date of Birth
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
             <input
               type="date"
               value={dateOfBirth}
@@ -185,16 +210,12 @@ const AdminSignup = () => {
                 errors.dateOfBirth ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
             />
-            {errors.dateOfBirth && (
-              <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>
-            )}
+            {errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
           </div>
 
           {/* Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Address</label>
             <input
               type="text"
               value={address}
@@ -204,18 +225,12 @@ const AdminSignup = () => {
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
               placeholder="Enter user's address"
             />
-            {errors.address && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.address}
-              </p>
-            )}
+            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </div>
 
           {/* Contact Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Contact Number
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Contact Number</label>
             <input
               type="tel"
               value={phoneNum}
@@ -225,18 +240,12 @@ const AdminSignup = () => {
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
               placeholder="Enter user's contact number (digits only)"
             />
-            {errors.phoneNum && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.phoneNum}
-              </p>
-            )}
+            {errors.phoneNum && <p className="text-red-500 text-xs mt-1">{errors.phoneNum}</p>}
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               value={email}
@@ -246,18 +255,12 @@ const AdminSignup = () => {
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
               placeholder="Enter user's email address"
             />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.email}
-              </p>
-            )}
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           {/* Password */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -267,27 +270,22 @@ const AdminSignup = () => {
               } rounded-lg focus:ring-2 focus:ring-black focus:outline-none`}
               placeholder="Set initial password for user"
             />
+            {/* Toggle show/hide password */}
             <span
               className="absolute right-3 top-9 cursor-pointer text-gray-500"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? "Hide" : "Show"}
             </span>
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.password}
-              </p>
-            )}
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
             className={`w-full py-2 text-white rounded-lg font-semibold transition ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black hover:bg-gray-800"
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-gray-800"
             }`}
           >
             {loading ? "Creating Account..." : "Create Account"}
@@ -295,12 +293,15 @@ const AdminSignup = () => {
         </form>
       </div>
 
-      {/* Success Dialog */}
+      {/* =========================
+          Success Dialog
+      ========================= */}
       {showSuccessDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                {/* Checkmark icon */}
                 <svg
                   className="h-8 w-8 text-green-600"
                   fill="none"
@@ -336,4 +337,3 @@ const AdminSignup = () => {
 };
 
 export default AdminSignup;
-
