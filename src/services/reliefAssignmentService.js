@@ -12,14 +12,14 @@ const API_BASE_URL =
 const unwrap = (data) => data?.data ?? data?.reliefAssignments ?? data ?? []
 
 export const fetchReliefAssignments = async () => {
-  const { data } = await axios.get(`${API_BASE_URL}/relief-assignments`, {
+  const { data } = await axios.get(`${API_BASE_URL}/api/relief-assignments`, {
     withCredentials: true
   })
   return unwrap(data)
 }
 
 export const fetchAvailableReliefTeachers = async ({ dayOfWeek, period, grade }) => {
-  const { data } = await axios.get(`${API_BASE_URL}/relief-assignments/available`, {
+  const { data } = await axios.get(`${API_BASE_URL}/api/relief-assignments/available`, {
     withCredentials: true,
     params: { dayOfWeek, period, grade }
   })
@@ -28,7 +28,7 @@ export const fetchAvailableReliefTeachers = async ({ dayOfWeek, period, grade })
 
 export const assignReliefTeacher = async ({ assignmentId, teacherId }) => {
   const { data } = await axios.post(
-    `${API_BASE_URL}/relief-assignments/${assignmentId}/assign`,
+    `${API_BASE_URL}/api/relief-assignments/${assignmentId}/assign`,
     { teacherId },
     { withCredentials: true }
   )
@@ -37,7 +37,7 @@ export const assignReliefTeacher = async ({ assignmentId, teacherId }) => {
 
 export const generateReliefAssignmentsForAbsence = async (absenceId) => {
   const { data } = await axios.post(
-    `${API_BASE_URL}/relief-assignments/${absenceId}/create`,
+    `${API_BASE_URL}/api/relief-assignments/${absenceId}/create`,
     {},
     { withCredentials: true }
   )
