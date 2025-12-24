@@ -1,33 +1,114 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useUser } from '../contexts/UserContext'
-import {
-  Home,
-  Calendar,
-  ClipboardList,
-  Users,
-  Bell,
-  Settings,
-  LogOut,
-  Sun,
-  Moon
-} from 'lucide-react'
 
 const navItems = [
-  { label: 'Dashboard', icon: <Home size={20} />, path: '/teacher/dashboard' },
-  { label: 'Attendance Records', icon: <Calendar size={20} />, path: '/teacher/attendance' },
-  { label: 'Leave Management', icon: <ClipboardList size={20} />, path: '/teacher/leave' },
-  { label: 'Relief Duty', icon: <Users size={20} />, path: '/teacher/relief-duty' },
-  { label: 'Announcements', icon: <Bell size={20} />, path: '/teacher/announcements' }
+  {
+    path: '/teacher/dashboard',
+    label: 'Dashboard',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 12l2-2 7-7 7 7 2 2v7a2 2 0 01-2 2h-4v-6H9v6H5a2 2 0 01-2-2v-7z"
+        />
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/timetable',
+    label: 'Timetable',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/attendance',
+    label: 'Attendance Records',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12h6m-6 4h6M9 8h6m-7 8H6a2 2 0 01-2-2V6a2 2 0 012-2h5.5a2 2 0 011.415.586l3.5 3.5A2 2 0 0117 9.5V18a2 2 0 01-2 2H7z"
+        />
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/leave',
+    label: 'Leave Management',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2z"
+        />
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/relief-duty',
+    label: 'Relief Assignment',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/announcements',
+    label: 'Announcements',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 10h.01M15 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+        />
+      </svg>
+    )
+  },
+  {
+    path: '/teacher/settings',
+    label: 'Settings',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        />
+      </svg>
+    )
+  }
 ]
 
 const TeacherNavbar = () => {
   const { user, logout } = useUser()
   const navigate = useNavigate()
 
-  const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark')
+  const [isDark, setIsDark] = useState(
+    typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark'
+  )
 
-  
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark')
@@ -38,87 +119,115 @@ const TeacherNavbar = () => {
     }
   }, [isDark])
 
+  if (!user || user.role !== 'teacher') {
+    return null
+  }
+
+  const handleSignOut = async () => {
+    await logout()
+    navigate('/', { replace: true })
+  }
+
   return (
-    <aside className="w-64 bg-white dark:bg-slate-900 shadow-lg p-6 flex flex-col justify-between min-h-screen border-r border-gray-100 dark:border-slate-800 transition-colors duration-300">
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-12 w-12 rounded-full bg-gray-900 dark:bg-indigo-600 text-white flex items-center justify-center text-lg font-semibold uppercase">
-            {(user?.name || 'T')
-              .split(' ')
-              .filter(Boolean)
-              .map((part) => part.charAt(0))
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()}
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-800 dark:text-white leading-tight">{user?.name || 'Teacher'}</h3>
-            <p className="text-xs text-gray-500 dark:text-slate-400">{user?.email || 'teacher@example.com'}</p>
-          </div>
-        </div>
-
-        {/* Role Badge and Theme Toggle */}
-        <div className="flex items-center justify-between mb-8">
-          <span className="inline-block bg-gray-100 dark:bg-slate-800 text-black dark:text-slate-300 text-[10px] font-bold px-2 py-1 rounded-md capitalize tracking-wider">
-            {user?.role || 'teacher'}
-          </span>
-          
-          {/* Dark Mode Toggle Button */}
-          <button 
-            onClick={() => setIsDark(!isDark)}
-            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 border border-slate-200 dark:border-slate-700 transition-all active:scale-90"
-          >
-            {isDark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-        </div>
-
-        <div className="border-t border-gray-200 dark:border-slate-800 mb-6" />
-
-        <nav className="space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 p-2.5 w-full text-left rounded-xl transition-all duration-200 text-sm font-medium ${
-                  isActive 
-                    ? 'bg-black dark:bg-indigo-600 text-white shadow-md' 
-                    : 'text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-                }`
-              }
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
-
-      <div className="space-y-3">
-        <NavLink
-          to="/teacher/settings"
-          className={({ isActive }) =>
-            `flex items-center gap-3 p-2.5 rounded-xl transition-all text-sm font-medium ${
-              isActive 
-                ? 'bg-black dark:bg-indigo-600 text-white shadow-md' 
-                : 'text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-            }`
-          }
-        >
-          <Settings size={18} /> Settings
-        </NavLink>
+    <aside className="fixed left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-6 transition-colors duration-300">
+      {/* Header with title + theme toggle */}
+      <div className="mb-8 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          H/Meegasara Maha Vidyalaya
+        </p>
 
         <button
-          type="button"
-          onClick={async () => {
-            await logout()
-            navigate('/', { replace: true })
-          }}
-          className="flex items-center gap-3 p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl w-full text-left text-sm font-medium transition-all"
+          onClick={() => setIsDark(!isDark)}
+          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-yellow-400 dark:hover:bg-slate-800 transition-all active:scale-90"
         >
-          <LogOut size={18} /> Sign Out
+          {isDark ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          ) : (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          )}
         </button>
       </div>
+
+      {/* Profile card */}
+      <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-5 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+          {(user.name || 'T')
+            .split(' ')
+            .filter(Boolean)
+            .map((part) => part.charAt(0))
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()}
+        </div>
+        <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
+          {user.name}
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+        <span className="mt-3 inline-flex items-center rounded-full bg-slate-900 dark:bg-indigo-600 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          {user.role}
+        </span>
+      </div>
+
+      {/* Nav items */}
+      <nav className="flex-1 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                isActive
+                  ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`mr-3 ${
+                    isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Sign out */}
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="mt-6 flex items-center justify-center rounded-xl border border-red-200 dark:border-red-900/30 px-4 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-900/10"
+      >
+        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        Sign Out
+      </button>
     </aside>
   )
 }
