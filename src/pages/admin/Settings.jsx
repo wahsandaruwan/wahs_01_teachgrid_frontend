@@ -1,309 +1,647 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Trash2, Loader2, Edit3, X, Copyright, AlertTriangle, Phone, MapPin, UserPlus, Save } from 'lucide-react';
-import axios from 'axios';
-import Header from '../../components/Header';
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  Trash2,
+  Loader2,
+  Edit3,
+  Search,
+  Mail,
+  Phone,
+  MapPin,
+  X,
+  Lock,
+  ShieldCheck,
+  Plus,
+  Save,
+  ChevronRight,
+  AlertCircle,
+  User,
+  Settings2,
+  CheckCircle2,
+} from "lucide-react";
 
-const Settings = () => {
+const SettingsPage = () => {
   const navigate = useNavigate();
-  const [adminData, setAdminData] = useState({ name: "", email: "", address: "", phoneNum: "" });
+
+  // Core Data States
+  const [adminData, setAdminData] = useState({
+    name: "",
+    email: "",
+    phoneNum: "",
+    address: "",
+  });
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [status, setStatus] = useState({ type: "", text: "" });
-  
-  const [isEditingAdmin, setIsEditingAdmin] = useState(false);
+
+  const [status, setStatus] = useState({ type: "", text: "", show: false });
+
+  // UI/Modal States
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [showAdminEditModal, setShowAdminEditModal] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  // Form States
+  const [teacherForm, setTeacherForm] = useState({
+    name: "",
+    email: "",
+    address: "",
+    phoneNum: "",
+    password: "",
+  });
 
-  const demoTeachers = [
-    { _id: "1", name: "Teacher 01", email: "teacher01@gmail.com", phoneNum: "0712345678", address: "Address 01" },
-  ];
+  // Updated tempAdminData to include password
+  const [tempAdminData, setTempAdminData] = useState({
+    name: "",
+    phoneNum: "",
+    address: "",
+    password: "", // Added password field
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  const showToast = useCallback((type, text) => {
+    setStatus({ type, text, show: true });
+    setTimeout(() => setStatus({ type: "", text: "", show: false }), 3000);
+  }, []);
+
+  // Initial Data Fetch
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const config = { withCredentials: true };
+      const [adminRes, teachersRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/admin/data`, config),
+        axios.get(`${API_BASE_URL}/api/admin/teachers`, config),
+      ]);
+      if (adminRes.data?.success)
+        setAdminData(adminRes.data.UserData || adminRes.data.admin);
+      if (teachersRes.data?.success)
+        setTeachers(teachersRes.data.teachers || []);
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      showToast("error", "Failed to sync data");
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE_URL, showToast]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [adminRes, teachersRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/admin/profile`).catch(() => null),
-          axios.get(`${API_BASE_URL}/api/teachers`).catch(() => null)
-        ]);
-        
-        if (adminRes && adminRes.data) {
-          setAdminData(adminRes.data);
-        } else {
-          setAdminData({ name: "Demo Admin", email: "admin@techgrid.com", address: "No. 45, Flower Road, Colombo 07", phoneNum: "0771234567" });
-        }
-
-        if (teachersRes && Array.isArray(teachersRes.data)) {
-          setTeachers(teachersRes.data.length > 0 ? teachersRes.data : demoTeachers);
-        } else {
-          setTeachers(demoTeachers);
-        }
-      } catch {
-        setTeachers(demoTeachers);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [API_BASE_URL]);
+  }, [fetchData]);
 
-  const handleProfileUpdate = async (e) => {
+  // Admin Update
+  const handleAdminUpdate = async (e) => {
     e.preventDefault();
     setUpdating(true);
     try {
-      await axios.patch(`${API_BASE_URL}/api/admin/update-profile`, adminData);
-      setStatus({ type: "success", text: "Profile updated successfully" });
-      setIsEditingAdmin(false);
-    } catch {
-      setStatus({ type: "success", text: "Saved to local session" });
-      setIsEditingAdmin(false);
+      const res = await axios.patch(
+        `${API_BASE_URL}/api/admin/update`,
+        tempAdminData,
+        { withCredentials: true }
+      );
+      if (res.data?.success) {
+        // Update local admin state (excluding password)
+        setAdminData((prev) => ({
+          ...prev,
+          name: tempAdminData.name,
+          phoneNum: tempAdminData.phoneNum,
+          address: tempAdminData.address,
+        }));
+        showToast("success", "Profile & Security updated! Check your email.");
+        setShowAdminEditModal(false);
+      }
+    } catch (error) {
+      console.error("Update Error:", error);
+      showToast(
+        "error",
+        error.response?.data?.message || "Failed to update admin"
+      );
     } finally {
       setUpdating(false);
-      setTimeout(() => setStatus({ type: "", text: "" }), 3000);
     }
   };
 
-  const handleEditClick = (teacher) => {
-    setSelectedTeacher({ ...teacher });
-    setShowEditModal(true);
-  };
-
+  // Teacher Update
   const handleTeacherUpdate = async (e) => {
     e.preventDefault();
     setUpdating(true);
     try {
-      await axios.patch(`${API_BASE_URL}/api/teachers/${selectedTeacher._id}`, selectedTeacher);
-      setTeachers(prev => prev.map(t => t._id === selectedTeacher._id ? selectedTeacher : t));
-      setStatus({ type: "success", text: "Teacher details updated!" });
-      setShowEditModal(false);
-    } catch {
-      setTeachers(prev => prev.map(t => t._id === selectedTeacher._id ? selectedTeacher : t));
-      setShowEditModal(false);
+      const res = await axios.patch(
+        `${API_BASE_URL}/api/admin/teachers/${selectedTeacher._id}`,
+        teacherForm,
+        { withCredentials: true }
+      );
+      if (res.data?.success) {
+        setTeachers((prev) =>
+          prev.map((t) =>
+            t._id === selectedTeacher._id ? { ...t, ...teacherForm } : t
+          )
+        );
+        showToast("success", "Faculty record updated & email sent");
+        setShowEditModal(false);
+      }
+    } catch (error) {
+      console.error("Teacher Update Error:", error);
+      showToast("error", error.response?.data?.message || "Update failed");
     } finally {
       setUpdating(false);
-      setTimeout(() => setStatus({ type: "", text: "" }), 3000);
     }
   };
 
-  const confirmDelete = (teacher) => {
-    setSelectedTeacher(teacher);
-    setShowDeleteModal(true);
-  };
-
-  const handleDelete = async () => {
-    if (!selectedTeacher) return;
+  // Delete Teacher
+  const handleDeleteTeacher = async () => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/teachers/${selectedTeacher._id}`);
-      setTeachers(prev => prev.filter(t => t._id !== selectedTeacher._id));
-    } catch {
-      setTeachers(prev => prev.filter(t => t._id !== selectedTeacher._id));
-    } finally {
-      setShowDeleteModal(false);
-      setSelectedTeacher(null);
+      const res = await axios.delete(
+        `${API_BASE_URL}/api/admin/teachers/${selectedTeacher._id}`,
+        { withCredentials: true }
+      );
+      if (res.data?.success) {
+        setTeachers((prev) =>
+          prev.filter((t) => t._id !== selectedTeacher._id)
+        );
+        showToast("success", "Teacher removed from system");
+        setShowDeleteModal(false);
+      }
+    } catch (error) {
+      console.error("Delete Error:", error);
+      showToast("error", "Deletion failed");
     }
   };
 
-  if (loading) return (
-    <div className="flex h-screen items-center justify-center bg-slate-50">
-      <Loader2 className="animate-spin text-indigo-600" size={40} />
-    </div>
-  );
+  const handleSearchTrigger = () => {
+    setActiveSearch(searchQuery);
+  };
+
+  const arialFont = { fontFamily: "Arial, Helvetica, sans-serif" };
+
+  if (loading)
+    return (
+      <div
+        className="h-screen flex items-center justify-center bg-[#F9FAFB]"
+        style={arialFont}
+      >
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#334155] flex flex-col">
-      <Header title="Settings" />
-      
-      <main className="max-w-7xl mx-auto px-6 py-2 flex-grow w-full mt-2">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-4">
-          
-          {/* Admin Profile Section */}
-          <div className="lg:col-span-4 sticky top-8">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h2 className="text-sm font-bold text-slate-800 tracking-tight">Personal Information</h2>
-                <button 
-                  onClick={() => setIsEditingAdmin(!isEditingAdmin)} 
-                  className={`p-2 rounded-lg transition-all ${isEditingAdmin ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-600'}`}
-                >
-                  {isEditingAdmin ? <X size={18} /> : <Edit3 size={18} />}
-                </button>
-              </div>
+    <div className="min-h-screen bg-[#F9FAFB] p-6 lg:p-10" style={arialFont}>
+      {/* STATUS TOAST */}
+      {status.show && (
+        <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-slate-900/10 backdrop-blur-md">
+          <div
+            className={`bg-white border ${
+              status.type === "success"
+                ? "border-emerald-100"
+                : "border-red-100"
+            } rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300`}
+          >
+            <div
+              className={`w-20 h-20 ${
+                status.type === "success"
+                  ? "bg-emerald-50 text-emerald-500"
+                  : "bg-red-50 text-red-500"
+              } rounded-full flex items-center justify-center mx-auto mb-6`}
+            >
+              {status.type === "success" ? (
+                <CheckCircle2 size={40} strokeWidth={2.5} />
+              ) : (
+                <AlertCircle size={40} strokeWidth={2.5} />
+              )}
+            </div>
+            <h3 className="text-xl font-bold tracking-tight text-gray-900 mb-2">
+              {status.type === "success" ? "Success!" : "Failed"}
+            </h3>
+            <p className="text-[12px] font-semibold text-gray-500 uppercase tracking-widest leading-relaxed">
+              {status.text}
+            </p>
+          </div>
+        </div>
+      )}
 
-              <div className="p-6">
-                {!isEditingAdmin ? (
-                  <div className="space-y-6">
-                    <div className="flex flex-col items-center">
-                      <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-xl shadow-indigo-100">
-                        {adminData.name.charAt(0)}
-                      </div>
-                      <h3 className="font-bold text-slate-900 text-lg">{adminData.name}</h3>
-                      <p className="text-slate-400 text-xs font-medium uppercase tracking-widest">{adminData.email}</p>
-                    </div>
-                    <div className="space-y-4 pt-4 border-t border-slate-50">
-                      <div className="flex items-start gap-3">
-                        <Phone size={16} className="text-slate-400 mt-1" />
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Contact</p>
-                          <p className="text-sm font-semibold text-slate-700">{adminData.phoneNum}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <MapPin size={16} className="text-slate-400 mt-1" />
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Address</p>
-                          <p className="text-sm font-semibold text-slate-700 leading-relaxed">{adminData.address}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleProfileUpdate} className="space-y-4">
-                    <input type="text" value={adminData.name} onChange={(e) => setAdminData({...adminData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all" placeholder="Full Name" />
-                    <input type="text" value={adminData.phoneNum} onChange={(e) => setAdminData({...adminData, phoneNum: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all" placeholder="Phone Number" />
-                    <textarea rows="3" value={adminData.address} onChange={(e) => setAdminData({...adminData, address: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all resize-none" placeholder="Address" />
-                    <button type="submit" className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all">
-                      {updating ? "Saving..." : "Update Admin Profile"}
-                    </button>
-                  </form>
-                )}
+      <div className="max-w-7xl mx-auto">
+        {/* ADMIN PROFILE SECTION */}
+        <div className="bg-gray-100 rounded-3xl p-8 mb-8 border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center group">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner transition-colors">
+                <User size={40} />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                {adminData.name}
+              </h2>
+              <div className="flex items-center gap-4 mt-1">
+                <span className="text-sm text-gray-400 flex items-center gap-1 font-medium">
+                  <Mail size={14} /> {adminData.email}
+                </span>
               </div>
             </div>
           </div>
-
-          {/* Table & Button Section */}
-          <div className="lg:col-span-8 flex flex-col gap-3">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-slate-800">Staff Directory</h3>
-                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
-                  {teachers.length} Instructors
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-                      <th className="px-6 py-4">Instructor Details</th>
-                      <th className="px-6 py-4">Location</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {teachers.map((t) => (
-                      <tr key={t._id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-5">
-                          <div className="font-bold text-slate-800 text-sm">{t.name}</div>
-                          <div className="text-slate-400 text-xs">{t.email}</div>
-                        </td>
-                        <td className="px-6 py-5 text-slate-500 text-[11px] font-medium max-w-[150px] truncate">
-                          {t.address}
-                        </td>
-                        <td className="px-6 py-5 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditClick(t)} className="p-2 text-slate-600 hover:text-indigo-600 transition-all bg-slate-50 rounded-lg">
-                            <Edit3 size={16} />
-                          </button>
-                          <button onClick={() => confirmDelete(t)} className="p-2 text-slate-600 hover:text-rose-600 transition-all bg-slate-50 rounded-lg">
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Right-aligned Add Button */}
-            <div className="flex justify-end">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm px-4 py-2 w-fit">
-                <div className="flex items-center gap-3">
-                  {status.text && (
-                    <div className="px-3 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold animate-in fade-in">
-                      {status.text}
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => navigate('/admin/signup')}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all shadow-sm active:scale-95 tracking-wide"
-                  >
-                    <UserPlus size={14} /> 
-                    <span>Add New Teacher</span>
-                  </button>
-                </div>
-              </div>
+          <div className="mt-6 md:mt-0 flex flex-col md:items-end gap-3">
+            <button
+              onClick={() => {
+                setTempAdminData({
+                  name: adminData.name,
+                  phoneNum: adminData.phoneNum,
+                  address: adminData.address,
+                  password: "",
+                });
+                setShowAdminEditModal(true);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-indigo-600 hover:text-white text-white rounded-xl text-xs font-bold transition-all border border-gray-100"
+            >
+              <Edit3 size={14} /> Edit My Profile
+            </button>
+            <div className="flex gap-4 text-[11px] text-gray-400 font-bold uppercase tracking-tight">
+              <span className="flex items-center gap-1">
+                <MapPin size={12} /> {adminData.address || "No Address"}
+              </span>
+              <span className="flex items-center gap-1">
+                <Phone size={12} /> {adminData.phoneNum || "No Phone"}
+              </span>
             </div>
           </div>
         </div>
-      </main>
 
-      {/*  Edit Teacher Details */}
-      {showEditModal && selectedTeacher && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <h4 className="text-lg font-bold text-slate-900 tracking-tight">Edit Teacher Records</h4>
-              <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors">
-                <X size={20}/>
-              </button>
+        {/* TEACHER TABLE SECTION */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-gray-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-gray-50/30">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight text-gray-900">
+                Manage Teacher
+              </h3>
+              <p className="text-gray-400 text-xs font-medium">
+                Manage teacher credentials and system access.
+              </p>
             </div>
-            <form onSubmit={handleTeacherUpdate} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                <input type="text" value={selectedTeacher.name} onChange={(e) => setSelectedTeacher({...selectedTeacher, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all" required />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
-                <input type="email" value={selectedTeacher.email} onChange={(e) => setSelectedTeacher({...selectedTeacher, email: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all" required />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                <input type="text" value={selectedTeacher.phoneNum || ""} onChange={(e) => setSelectedTeacher({...selectedTeacher, phoneNum: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Home Address</label>
-                <textarea rows="2" value={selectedTeacher.address || ""} onChange={(e) => setSelectedTeacher({...selectedTeacher, address: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border focus:border-indigo-600 outline-none transition-all resize-none" />
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-3 bg-slate-50 text-slate-600 font-bold rounded-xl text-[10px] uppercase tracking-widest">Cancel</button>
-                <button type="submit" className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all">
-                  <Save size={14}/> {updating ? "Saving..." : "Update"}
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
+              <div className="relative flex items-center w-full md:w-96 group">
+                <Search
+                  className="absolute left-4 text-gray-400 group-focus-within:text-indigo-500"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by teacher name..."
+                  className="w-full pl-12 pr-28 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-indigo-500"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchTrigger()}
+                />
+                <button
+                  onClick={handleSearchTrigger}
+                  className="absolute right-2 px-4 py-1.5 bg-black text-white text-[10px] font-bold uppercase rounded-lg"
+                >
+                  Search
                 </button>
               </div>
+              <button
+                onClick={() => navigate("/admin/signup")}
+                className="flex items-center justify-center gap-3 bg-black text-white px-6 py-3 rounded-xl hover:bg-indigo-700 shadow-lg w-full md:w-auto"
+              >
+                <Plus size={18} strokeWidth={2.5} />
+                <span className="text-xs font-bold uppercase">Add Teacher</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50/80 text-[11px] font-bold uppercase text-gray-400">
+                <tr>
+                  <th className="px-10 py-5">Staff Member</th>
+                  <th className="px-10 py-5">Email Address</th>
+                  <th className="px-10 py-5">Office Location</th>
+                  <th className="px-10 py-5 text-right">Settings</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {teachers
+                  .filter((t) =>
+                    t.name.toLowerCase().includes(activeSearch.toLowerCase())
+                  )
+                  .map((t) => (
+                    <tr
+                      key={t._id}
+                      className="hover:bg-indigo-50/30 transition-all group"
+                    >
+                      <td className="px-10 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-white border border-gray-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm">
+                            {t.name?.substring(0, 2).toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-sm text-gray-800">
+                            {t.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-10 py-5 text-sm text-gray-500 font-medium">
+                        {t.email}
+                      </td>
+                      <td className="px-10 py-5 text-sm text-gray-400 italic font-medium">
+                        {t.address || "Global Access"}
+                      </td>
+                      <td className="px-10 py-5 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedTeacher(t);
+                              setTeacherForm({
+                                name: t.name,
+                                email: t.email,
+                                address: t.address || "",
+                                phoneNum: t.phoneNum || "",
+                                password: "",
+                              });
+                              setShowEditModal(true);
+                            }}
+                            className="p-2 text-indigo-500 bg-white rounded-lg border border-gray-100 hover:bg-indigo-500 hover:text-white"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedTeacher(t);
+                              setShowDeleteModal(true);
+                            }}
+                            className="p-2 text-red-500 bg-white rounded-lg border border-gray-100 hover:bg-red-500 hover:text-white"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ADMIN EDIT MODAL (UPDATED WITH PASSWORD) */}
+      {showAdminEditModal && (
+        <div className="fixed inset-0 z-[2500] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+          <div
+            className="bg-white rounded-[2rem] p-10 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+            style={arialFont}
+          >
+            <button
+              onClick={() => setShowAdminEditModal(false)}
+              className="absolute top-8 right-8 text-gray-400 hover:text-gray-900"
+            >
+              <X size={24} />
+            </button>
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold tracking-tight">My Settings</h3>
+              <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mt-1">
+                Update your personal identity & security
+              </p>
+            </div>
+            <form onSubmit={handleAdminUpdate} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                  Your Full Name
+                </label>
+                <input
+                  type="text"
+                  value={tempAdminData.name}
+                  onChange={(e) =>
+                    setTempAdminData({ ...tempAdminData, name: e.target.value })
+                  }
+                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                  Contact Number
+                </label>
+                <input
+                  type="text"
+                  value={tempAdminData.phoneNum}
+                  onChange={(e) =>
+                    setTempAdminData({
+                      ...tempAdminData,
+                      phoneNum: e.target.value,
+                    })
+                  }
+                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  value={tempAdminData.address}
+                  onChange={(e) =>
+                    setTempAdminData({
+                      ...tempAdminData,
+                      address: e.target.value,
+                    })
+                  }
+                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
+                />
+              </div>
+
+              {/* NEW PASSWORD FIELD */}
+              <div className="space-y-1.5 pt-2 border-t border-gray-50">
+                <label className="text-[11px] font-bold text-red-500 uppercase ml-1 flex items-center gap-1">
+                  <Lock size={12} /> New Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  placeholder="Leave blank to keep current"
+                  value={tempAdminData.password}
+                  onChange={(e) =>
+                    setTempAdminData({
+                      ...tempAdminData,
+                      password: e.target.value,
+                    })
+                  }
+                  className="w-full p-3.5 bg-red-50/10 border border-red-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-red-50"
+                />
+                <p className="text-[9px] text-gray-400 ml-1">
+                  Min. 6 characters with one uppercase letter recommended.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={updating}
+                className="w-full py-4 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 shadow-lg flex items-center justify-center gap-2 mt-4"
+              >
+                {updating ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <Save size={18} /> Save & Send Email
+                  </>
+                )}
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/*  Delete Confirmation */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in duration-200">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-6 border-4 border-rose-100">
-                <AlertTriangle size={32} />
+      {/* TEACHER EDIT MODAL */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-[2500] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[2rem] p-10 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute top-8 right-8 text-gray-400 hover:text-gray-900"
+            >
+              <X size={24} />
+            </button>
+            <div className="mb-8 flex items-center gap-4">
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl">
+                {teacherForm.name?.substring(0, 1).toUpperCase()}
               </div>
-              <h4 className="text-lg font-bold text-slate-900 mb-2">Confirm Removal</h4>
-              <p className="text-sm text-slate-500">Are you sure you want to remove <span className="text-slate-900 font-bold">{selectedTeacher?.name}</span>?</p>
-              <div className="flex gap-3 mt-8 w-full">
-                <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-50 text-slate-600 font-bold rounded-xl text-[10px] uppercase tracking-widest">Keep</button>
-                <button onClick={handleDelete} className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100 transition-all">Remove</button>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                  Edit Staff Profile
+                </h3>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Update credentials & notify member
+                </p>
               </div>
             </div>
+            <form onSubmit={handleTeacherUpdate} className="space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={teacherForm.name}
+                  onChange={(e) =>
+                    setTeacherForm({ ...teacherForm, name: e.target.value })
+                  }
+                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={teacherForm.email}
+                  onChange={(e) =>
+                    setTeacherForm({ ...teacherForm, email: e.target.value })
+                  }
+                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={teacherForm.phoneNum || ""}
+                  onChange={(e) =>
+                    setTeacherForm({ ...teacherForm, phoneNum: e.target.value })
+                  }
+                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
+                  Office Address
+                </label>
+                <input
+                  type="text"
+                  value={teacherForm.address}
+                  onChange={(e) =>
+                    setTeacherForm({ ...teacherForm, address: e.target.value })
+                  }
+                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none"
+                />
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 pt-3 border-t border-gray-50 mt-4">
+                <label className="md:w-1/3 text-[11px] font-bold text-red-500 uppercase flex items-center gap-1">
+                  <Lock size={12} /> New Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={teacherForm.password}
+                  onChange={(e) =>
+                    setTeacherForm({ ...teacherForm, password: e.target.value })
+                  }
+                  className="md:w-2/3 p-3 bg-red-50/20 border border-red-100 rounded-xl text-sm font-semibold outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={updating}
+                className="w-full mt-6 py-4 bg-[#0a035f] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-2"
+              >
+                {updating ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} /> Update & Notify Teacher
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         </div>
       )}
 
-      <footer className="py-6 text-center text-slate-400 text-[10px] font-medium tracking-widest uppercase">
-               <Copyright size={12} className="inline mr-1" /> {new Date().getFullYear()} TEACHGRID. ALL RIGHTS RESERVED.
-            </footer>
+      {/* DELETE MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[2500] flex items-center justify-center bg-slate-900/40 backdrop-blur-md">
+          <div className="bg-white rounded-[2rem] p-10 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 size={30} />
+            </div>
+            <h4 className="text-xl font-bold mb-2 uppercase text-gray-900 tracking-tight">
+              Delete Account?
+            </h4>
+            <p className="text-sm text-gray-500 mb-8 leading-relaxed font-medium">
+              Are you sure you want to remove{" "}
+              <span className="text-indigo-600 font-bold">
+                {selectedTeacher?.name}
+              </span>
+              ? This action is permanent.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="py-3.5 bg-gray-100 text-gray-900 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-200"
+              >
+                Abort
+              </button>
+              <button
+                onClick={handleDeleteTeacher}
+                className="py-3.5 bg-red-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default Settings;
+export default SettingsPage;
