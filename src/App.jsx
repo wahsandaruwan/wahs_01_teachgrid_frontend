@@ -12,6 +12,7 @@ import Announcements from './pages/admin/Announcements';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
 import AdminSignup from './pages/admin/AdminSignup';
+import AdminTimeTable from './pages/admin/TimeTable'; // New import
 import TeacherLayout from './pages/teacher/TeacherLayout';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherAttendance from './pages/teacher/Attendance';
@@ -19,6 +20,7 @@ import TeacherLeaveManagement from './pages/teacher/leave/LeaveManagement';
 import TeacherReliefDuty from './pages/teacher/ReliefDuty';
 import TeacherAnnouncements from './pages/teacher/Announcements';
 import TeacherSettings from './pages/teacher/Settings';
+import TeacherTimeTable from './pages/teacher/TimeTable'; // New import
 
 const PrivateRoute = ({ children, role }) => {
   const { user, loading } = useUser();
@@ -38,7 +40,6 @@ const PrivateRoute = ({ children, role }) => {
 };
 
 const App = () => {
-  
   // Check Dark Mode status when the app starts
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -64,6 +65,7 @@ const App = () => {
       >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="timetable" element={<AdminTimeTable />} /> {/* New route */}
         <Route path="attendance" element={<Attendance />} />
         <Route path="leave" element={<LeaveManagement />} />
         <Route path="relief-assignment" element={<AdminReliefAssignment />} />
@@ -84,6 +86,7 @@ const App = () => {
       >
         <Route index element={<Navigate to="/teacher/dashboard" replace />} />
         <Route path="dashboard" element={<TeacherDashboard />} />
+        <Route path="timetable" element={<TeacherTimeTable />} /> {/* New route */}
         <Route path="attendance" element={<TeacherAttendance />} />
         <Route path="leave" element={<TeacherLeaveManagement />} />
         <Route path="relief-duty" element={<TeacherReliefDuty />} />

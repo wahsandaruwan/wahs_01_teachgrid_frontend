@@ -13,6 +13,18 @@ const navItems = [
     )
   },
   {
+    path: '/admin/timetable',
+    label: 'Timetable',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    )
+  },
+  {
     path: '/admin/attendance',
     label: 'Attendance Records',
     icon: (
@@ -72,10 +84,8 @@ const AdminNavbar = () => {
   const { user, logout } = useUser()
   const navigate = useNavigate()
 
-  
   const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark')
 
-  
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark')
@@ -98,7 +108,7 @@ const AdminNavbar = () => {
   return (
     <aside className="fixed left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-6 transition-colors duration-300">
       <div className="mb-8 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Management System</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">H/Meegasara Maha Vidyalaya</p>
         
         {/* Dark Mode Toggle Button */}
         <button 
