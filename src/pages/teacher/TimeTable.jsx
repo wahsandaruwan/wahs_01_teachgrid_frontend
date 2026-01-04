@@ -2,24 +2,35 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../../components/Header";
 
+// Axios instance with base API URL from environment variables
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
 });
 
+// Static data for filters
 const GRADES = [6, 7, 8, 9, 10, 11];
 const SECTIONS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const Timetable = () => {
+  // Store all timetable records from backend
   const [timetables, setTimetables] = useState([]);
+
+  // Selected grade number (6–11)
   const [gradeNumber, setGradeNumber] = useState("6");
+
+  // Selected grade section (A–J)
   const [gradeSection, setGradeSection] = useState("A");
+
+  // Selected teacher ID (empty = all teachers)
   const [selectedTeacher, setSelectedTeacher] = useState("");
 
+  // Load timetable data when component mounts
   useEffect(() => {
     loadTimetables();
   }, []);
 
+  // Fetch timetable data from backend
   const loadTimetables = async () => {
     try {
       const res = await api.get("/timetable");
@@ -29,7 +40,8 @@ const Timetable = () => {
     }
   };
 
-  // 🔹 Extract unique teachers
+  // 🔹 Extract unique teachers from timetable list
+  // Uses Map to remove duplicate teachers by ID
   const teachers = [
     ...new Map(
       timetables
@@ -38,9 +50,12 @@ const Timetable = () => {
     ).values(),
   ];
 
-  // 🔹 Filter timetable
+  // 🔹 Filter timetable records by grade, section, and teacher
   const filteredTimetables = timetables.filter((t) => {
+    // Match grade like "6A", "7B", etc.
     const matchGrade = t.grade === `${gradeNumber}${gradeSection}`;
+
+    // Match teacher if selected
     const matchTeacher = selectedTeacher
       ? t.teacher?._id === selectedTeacher
       : true;
@@ -50,11 +65,15 @@ const Timetable = () => {
 
   return (
     <>
+      {/* Page header */}
       <Header title="View Timetable" />
 
       <div className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
-        {/* FILTER BAR */}
+        
+        {/* 🔹 FILTER BAR */}
         <div className="flex flex-wrap gap-4 mb-8 items-center">
+
+          {/* Grade number selector */}
           <select
             value={gradeNumber}
             onChange={(e) => setGradeNumber(e.target.value)}
@@ -65,6 +84,7 @@ const Timetable = () => {
             ))}
           </select>
 
+          {/* Grade section selector */}
           <select
             value={gradeSection}
             onChange={(e) => setGradeSection(e.target.value)}
@@ -75,7 +95,7 @@ const Timetable = () => {
             ))}
           </select>
 
-          {/* TEACHER FILTER */}
+          {/* Teacher filter dropdown */}
           <select
             value={selectedTeacher}
             onChange={(e) => setSelectedTeacher(e.target.value)}
@@ -89,6 +109,7 @@ const Timetable = () => {
             ))}
           </select>
 
+          {/* Refresh timetable data */}
           <button
             onClick={loadTimetables}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm"
@@ -96,14 +117,17 @@ const Timetable = () => {
             🔄 Refresh
           </button>
 
+          {/* Display selected grade info */}
           <span className="ml-auto text-sm font-medium">
             Grade {gradeNumber} - {gradeSection}
           </span>
         </div>
 
-        {/* TIMETABLE TABLE  */}
+        {/* 🔹 TIMETABLE TABLE */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <table className="w-full border-collapse text-sm">
+
+            {/* Table header */}
             <thead className="bg-blue-600 text-white">
               <tr>
                 <th className="border p-3 text-center">Period/Day</th>
@@ -115,14 +139,20 @@ const Timetable = () => {
               </tr>
             </thead>
 
+            {/* Table body */}
             <tbody>
+              {/* Create 8 periods */}
               {[...Array(8)].map((_, p) => (
                 <tr key={p}>
+                  
+                  {/* Period number column */}
                   <td className="border p-3 text-center font-medium bg-blue-50">
-                   {p + 1}
+                    {p + 1}
                   </td>
 
+                  {/* Timetable cells per day */}
                   {DAYS.map((day) => {
+                    // Find matching timetable entry
                     const entry = filteredTimetables.find(
                       (t) =>
                         t.dayOfWeek === day &&
@@ -133,14 +163,18 @@ const Timetable = () => {
                       <td key={day} className="border p-3 text-center">
                         {entry ? (
                           <>
+                            {/* Subject name */}
                             <div className="font-semibold">
                               {entry.subject}
                             </div>
+
+                            {/* Teacher name */}
                             <div className="text-xs text-gray-500">
                               {entry.teacher?.name}
                             </div>
                           </>
                         ) : (
+                          // Empty cell
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
