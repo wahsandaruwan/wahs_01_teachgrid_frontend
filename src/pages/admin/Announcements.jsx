@@ -9,6 +9,7 @@ import {
   Edit3,
   Trash2,
   X,
+  CheckCircle,
 } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 
@@ -30,6 +31,21 @@ const Announcements = () => {
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [announcements, setAnnouncements] = useState([])
+
+  // Toast notification state
+  const [toast, setToast] = useState({
+    type: '', // 'success' | 'error' | 'info'
+    message: '',
+    visible: false,
+  })
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: null,
+  })
 
   const stats = useMemo(() => {
     const today = new Date().toDateString()
@@ -77,6 +93,14 @@ const Announcements = () => {
     setEditingId(null)
   }
 
+  // Toast helper
+  const showToast = (type, message) => {
+    setToast({ type, message, visible: true })
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }))
+    }, 4000)
+  }
+
   const handlePublish = async () => {
     if (
       !formData.title.trim() ||
@@ -84,7 +108,8 @@ const Announcements = () => {
       !formData.category ||
       !formData.priority
     ) {
-      return alert('Please fill all required fields')
+      showToast('error', 'Please fill in all required fields before publishing.')
+      return
     }
 
     try {
@@ -103,26 +128,41 @@ const Announcements = () => {
 
       resetForm()
       setActiveTab('view')
+      showToast(
+        'success',
+        editingId 
+          ? 'Announcement updated successfully.' 
+          : 'Announcement published successfully.'
+      )
       fetchAnnouncements()
     } catch (err) {
-      alert(err.message)
+      showToast('error', err.message || 'Unable to save the announcement.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async id => {
-    if (!window.confirm('Delete this announcement?')) return
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/announcements/${id}`,
-        { method: 'DELETE' }
-      )
-      if (!res.ok) throw new Error('Failed to delete')
-      setAnnouncements(prev => prev.filter(a => a._id !== id))
-    } catch (err) {
-      alert(err.message)
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Delete Announcement',
+      description: 'This action cannot be undone. Are you sure you want to delete this announcement?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(
+            `${API_BASE_URL}/api/announcements/${id}`,
+            { method: 'DELETE' }
+          )
+          if (!res.ok) throw new Error('Failed to delete announcement.')
+          setAnnouncements(prev => prev.filter(a => a._id !== id))
+          showToast('success', 'Announcement deleted successfully.')
+        } catch (err) {
+          showToast('error', err.message || 'Unable to delete the announcement.')
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, open: false }))
+        }
+      },
+    })
   }
 
   const startEdit = ann => {
@@ -192,7 +232,7 @@ const Announcements = () => {
           </button>
         </div>
 
-        {/* View */}
+        {/* View Tab */}
         {activeTab === 'view' && (
           <div className="bg-white rounded-2xl shadow-md border p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
@@ -275,7 +315,7 @@ const Announcements = () => {
           </div>
         )}
 
-        {/* Create / Edit */}
+        {/* Create / Edit Tab */}
         {activeTab === 'create' && (
           <div className="bg-white rounded-2xl shadow-md border p-6 w-full max-w-5xl mx-auto">
             <div className="flex items-center gap-3 mb-6">
@@ -371,12 +411,87 @@ const Announcements = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div
+          className={`
+            fixed bottom-6 right-6 z-50 max-w-sm w-80 px-5 py-4 rounded-2xl shadow-2xl text-sm flex items-start gap-3 border backdrop-blur-sm
+            ${
+              toast.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-900 border-emerald-200/50'
+                : 'bg-red-500/10 text-red-900 border-red-200/50'
+            }
+          `}
+        >
+          <div className="mt-0.5 flex-shrink-0">
+            {toast.type === 'success' && (
+              <CheckCircle className="w-5 h-5 text-emerald-500" />
+            )}
+            {toast.type === 'error' && (
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium">{toast.message}</p>
+          </div>
+          <button
+            onClick={() => setToast(prev => ({ ...prev, visible: false }))}
+            className="flex-shrink-0 p-1 ml-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-white/50 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/50 w-full max-w-md p-6">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="flex-shrink-0 pt-0.5">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                  {confirmDialog.title}
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {confirmDialog.description}
+                </p>
+              </div>
+              <button
+                onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+                className="flex-shrink-0 p-2 ml-auto text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+                className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDialog.onConfirm}
+                className="px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-sm hover:shadow-md transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
 
-/* Reusable components */
-
+/* Reusable components remain unchanged */
 const StatCard = ({ title, value, subtitle, icon }) => (
   <div className="relative overflow-hidden rounded-2xl p-5 shadow-md border bg-white">
     <div className="flex items-start justify-between mb-4">
@@ -511,4 +626,4 @@ const FormSelect = ({ label, value, onChange, options, placeholder }) => (
   </div>
 )
 
-export default Announcements
+export default Announcements;

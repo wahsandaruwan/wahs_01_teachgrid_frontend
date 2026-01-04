@@ -29,7 +29,7 @@ const Timetable = () => {
     }
   };
 
-  // 🔹 Extract unique teachers for dropdown
+  // 🔹 Extract unique teachers
   const teachers = [
     ...new Map(
       timetables
@@ -38,6 +38,7 @@ const Timetable = () => {
     ).values(),
   ];
 
+  // 🔹 Filter timetable
   const filteredTimetables = timetables.filter((t) => {
     const matchGrade = t.grade === `${gradeNumber}${gradeSection}`;
     const matchTeacher = selectedTeacher
@@ -74,7 +75,7 @@ const Timetable = () => {
             ))}
           </select>
 
-          {/* 👨‍🏫 TEACHER DROPDOWN */}
+          {/* TEACHER FILTER */}
           <select
             value={selectedTeacher}
             onChange={(e) => setSelectedTeacher(e.target.value)}
@@ -100,32 +101,36 @@ const Timetable = () => {
           </span>
         </div>
 
-        {/* TIMETABLE TABLE */}
+        {/* TIMETABLE TABLE  */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <table className="w-full border-collapse text-sm">
             <thead className="bg-blue-600 text-white">
               <tr>
-                <th className="border p-3 text-left">Day</th>
-                {[...Array(8)].map((_, i) => (
-                  <th key={i} className="border p-3 text-center">
-                    Period {i + 1}
+                <th className="border p-3 text-center">Period/Day</th>
+                {DAYS.map((day) => (
+                  <th key={day} className="border p-3 text-center">
+                    {day}
                   </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
-              {DAYS.map((day) => (
-                <tr key={day}>
-                  <td className="border p-3 font-medium bg-blue-50">
-                    {day}
+              {[...Array(8)].map((_, p) => (
+                <tr key={p}>
+                  <td className="border p-3 text-center font-medium bg-blue-50">
+                   {p + 1}
                   </td>
-                  {[...Array(8)].map((_, p) => {
+
+                  {DAYS.map((day) => {
                     const entry = filteredTimetables.find(
-                      (t) => t.dayOfWeek === day && t.period === p + 1
+                      (t) =>
+                        t.dayOfWeek === day &&
+                        Number(t.period) === p + 1
                     );
 
                     return (
-                      <td key={p} className="border p-3 text-center">
+                      <td key={day} className="border p-3 text-center">
                         {entry ? (
                           <>
                             <div className="font-semibold">
