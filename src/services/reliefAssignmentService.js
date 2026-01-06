@@ -18,10 +18,10 @@ export const fetchReliefAssignments = async () => {
   return unwrap(data)
 }
 
-export const fetchAvailableReliefTeachers = async ({ dayOfWeek, period, grade }) => {
+export const fetchAvailableReliefTeachers = async ({ dayOfWeek, period, grade, date }) => {
   const { data } = await axios.get(`${API_BASE_URL}/api/relief-assignments/available`, {
     withCredentials: true,
-    params: { dayOfWeek, period, grade }
+    params: { dayOfWeek, period, grade, date } 
   })
   return unwrap(data)
 }

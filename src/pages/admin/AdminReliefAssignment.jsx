@@ -40,16 +40,17 @@ const AdminReliefAssignment = () => {
     const assignmentId = assignment._id || assignment.id
     if (!assignmentId) return
 
-    // Avoid refetch if already loaded
     if (availableById[assignmentId]) return
 
     try {
       setAvailableLoadingId(assignmentId)
       setError('')
+      // FIX: Passing date from attendance object to help backend filtering
       const options = await fetchAvailableReliefTeachers({
         dayOfWeek: assignment.dayOfWeek,
         period: assignment.period,
-        grade: assignment.grade
+        grade: assignment.grade,
+        date: assignment.attendance?.date 
       })
       setAvailableById((prev) => ({ ...prev, [assignmentId]: options ?? [] }))
     } catch (availError) {
@@ -187,12 +188,18 @@ const AdminReliefAssignment = () => {
               <tbody className="divide-y divide-slate-100 bg-white">
                 {assignments.map((assignment) => {
                   const assignmentId = assignment._id || assignment.id
-                  const originalTeacher = assignment.originalTeacher || assignment.absence?.originalTeacher
+                  
+                  // FIX: Mapping name from the new 'attendance' field
                   const absentName =
-                    originalTeacher?.name ||
-                    assignment.originalTeacherName ||
-                    assignment.absence?.teacher?.name ||
+                    assignment.originalTeacher?.name ||
+                    assignment.attendance?.teacher?.name ||
                     'N/A'
+
+                  // FIX: Safely formatting date from the new 'attendance' field
+                  const displayDate = assignment.attendance?.date 
+                    ? new Date(assignment.attendance.date).toLocaleDateString() 
+                    : ''
+
                   const reliefName = assignment.reliefTeacher?.name
                   const reliefAvatar =
                     assignment.reliefTeacher?.name
@@ -208,7 +215,8 @@ const AdminReliefAssignment = () => {
                   return (
                     <tr key={assignmentId} className="transition hover:bg-slate-50">
                       <td className="px-6 py-4 text-sm text-slate-900">
-                        <p className="font-semibold">{`${assignment.dayOfWeek || '—'} · Period ${assignment.period ?? '—'}`}</p>
+                        {/* UI remains same but using displayDate variable */}
+                        <p className="font-semibold">{`${displayDate || assignment.dayOfWeek} · Period ${assignment.period ?? '—'}`}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900">{assignment.grade || '—'}</td>
                       <td className="px-6 py-4 text-sm text-slate-900">{assignment.subject || '—'}</td>
@@ -287,5 +295,3 @@ const AdminReliefAssignment = () => {
 }
 
 export default AdminReliefAssignment
-
-
