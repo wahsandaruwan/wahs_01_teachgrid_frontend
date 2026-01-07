@@ -1,234 +1,103 @@
-import React, { useState, useEffect } from 'react'
-import Header from '../../components/Header'
-import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  FileText,
-  MoreHorizontal,
-  Eye,
-  Undo2,
-  AlertCircle
-} from 'lucide-react'
-import { fetchAllLeaves, fetchLeaveStats, updateLeaveStatus } from '../../services/leaveService'
+import React, { useEffect } from 'react'; // useEffect ඇතුළත් කළා
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useUser } from './contexts/UserContext';
+import SignInPage from './pages/SignInPage';
+import NotAuthorized from './pages/NotAuthorized';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminReliefAssignment from './pages/admin/AdminReliefAssignment';
+import Attendance from './pages/admin/Attendance';
+import LeaveManagement from './pages/admin/LeaveManagement';
+import Announcements from './pages/admin/Announcements';
+import Reports from './pages/admin/Reports';
+import Settings from './pages/admin/Settings';
+import AdminSignup from './pages/admin/AdminSignup';
+import AdminTimeTable from './pages/admin/TimeTable'; // New import
+import TeacherLayout from './pages/teacher/TeacherLayout';
+import TeacherDashboard from './pages/teacher/Dashboard';
+import TeacherAttendance from './pages/teacher/Attendance';
+import TeacherLeaveManagement from './pages/teacher/leave/LeaveManagement';
+import TeacherReliefDuty from './pages/teacher/ReliefDuty';
+import TeacherAnnouncements from './pages/teacher/Announcements';
+import TeacherSettings from './pages/teacher/Settings';
+import TeacherTimeTable from './pages/teacher/TimeTable'; // New import
 
-const LeaveManagement = () => {
-  const [leaves, setLeaves] = useState([])
-  const [stats, setStats] = useState({
-    pendingRequests: 0,
-    approvedToday: 0,
-    rejectedToday: 0,
-    averageResponse: 0
-  })
-  // eslint-disable-next-line no-unused-vars
-  const [loading, setLoading] = useState(true)
+const PrivateRoute = ({ children, role }) => {
+  const { user, loading } = useUser();
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/" replace />;
+  if (role && user.role.toLowerCase() !== role.toLowerCase()) return <NotAuthorized />;
+
+  return children;
+};
+
+const App = () => {
+  // Check Dark Mode status when the app starts
   useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
-    setLoading(true)
-    try {
-      const leavesData = await fetchAllLeaves()
-      const statsData = await fetchLeaveStats()
-      setLeaves(Array.isArray(leavesData) ? leavesData : [])
-      setStats(statsData || {
-        pendingRequests: 0,
-        approvedToday: 0,
-        rejectedToday: 0,
-        averageResponse: 0
-      })
-    } catch (error) {
-      console.error('Error loading leave data:', error)
-    } finally {
-      setLoading(false)
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
-  }
-
-  const handleStatusUpdate = async (id, status) => {
-    try {
-      await updateLeaveStatus(id, status)
-      loadData() // Refresh data
-    } catch (error) {
-      console.error('Error updating status:', error)
-      alert('Failed to update status')
-    }
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Approved': return 'bg-green-100 text-green-700'
-      case 'Rejected': return 'bg-red-100 text-red-700'
-      default: return 'bg-orange-100 text-orange-700'
-    }
-  }
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Approved': return <CheckCircle2 className="w-4 h-4 mr-1" />
-      case 'Rejected': return <AlertCircle className="w-4 h-4 mr-1" />
-      default: return <Clock className="w-4 h-4 mr-1" />
-    }
-  }
+  }, []);
 
   return (
-    <>
-      <Header title="Leave Management" />
-      <div className="flex-1 p-8 bg-gray-50 overflow-y-auto">
+    <Routes>
+      <Route path="/" element={<SignInPage />} />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Pending Requests"
-            value={stats.pendingRequests}
-            subtitle="Awaiting approval"
-            icon={<Calendar className="text-gray-400" size={20} />}
-          />
-          <StatCard
-            title="Approved Today"
-            value={stats.approvedToday}
-            subtitle="Requests approved"
-            icon={<CheckCircle2 className="text-green-500" size={20} />}
-          />
-          <StatCard
-            title="Rejected Today"
-            value={stats.rejectedToday}
-            subtitle="Requests rejected"
-            icon={<Clock className="text-orange-500" size={20} />}
-          />
-          <StatCard
-            title="Average Response"
-            value={stats.averageResponse}
-            subtitle="Days to process"
-            icon={<FileText className="text-gray-400" size={20} />}
-          />
-        </div>
+      {/* Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute role="admin">
+            <AdminLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="timetable" element={<AdminTimeTable />} /> {/* New route */}
+        <Route path="attendance" element={<Attendance />} />
+        <Route path="leave" element={<LeaveManagement />} />
+        <Route path="relief-assignment" element={<AdminReliefAssignment />} />
+        <Route path="announcements" element={<Announcements />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="signup" element={<AdminSignup />} />
+      </Route>
 
-        {/* Leave Requests Table Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-50">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="text-gray-900" size={24} />
-              <h3 className="text-xl font-bold text-gray-900">Leave Requests Management</h3>
-            </div>
-            <p className="text-gray-500">Review and approve teacher leave applications</p>
-          </div>
+      {/* Teacher Routes */}
+      <Route
+        path="/teacher"
+        element={
+          <PrivateRoute role="teacher">
+            <TeacherLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Navigate to="/teacher/dashboard" replace />} />
+        <Route path="dashboard" element={<TeacherDashboard />} />
+        <Route path="timetable" element={<TeacherTimeTable />} /> {/* New route */}
+        <Route path="attendance" element={<TeacherAttendance />} />
+        <Route path="leave" element={<TeacherLeaveManagement />} />
+        <Route path="relief-duty" element={<TeacherReliefDuty />} />
+        <Route path="announcements" element={<TeacherAnnouncements />} />
+        <Route path="settings" element={<TeacherSettings />} />
+      </Route>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Teacher</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Type</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Dates</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-center">Days</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Reason</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-center">Documents</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {leaves.map((leave) => (
-                  <tr key={leave._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600">
-                          {leave.teacher?.initials || leave.teacher?.name?.charAt(0) || '?'}
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900">{leave.teacher?.name || 'Unknown Teacher'}</p>
-                          <p className="text-xs text-blue-600 font-medium">{leave.teacher?.subject || 'Staff'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{leave.type}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'} - {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 text-center">{leave.days}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{leave.reason}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(leave.status)}`}>
-                        {getStatusIcon(leave.status)}
-                        {leave.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {leave.documents !== 'None' ? (
-                        <button className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-black">
-                          <Eye size={16} className="mr-1" />
-                          View (1)
-                        </button>
-                      ) : (
-                        <span className="text-sm text-gray-400">None</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center gap-2">
-                        {leave.status === 'Pending' ? (
-                          <>
-                            <button
-                              onClick={() => handleStatusUpdate(leave._id, 'Approved')}
-                              className="px-4 py-2 bg-black text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleStatusUpdate(leave._id, 'Rejected')}
-                              className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button
-                              className="px-4 py-2 bg-gray-300 text-white rounded-lg text-sm font-bold cursor-not-allowed"
-                              disabled
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="px-4 py-2 bg-gray-300 text-white rounded-lg text-sm font-bold cursor-not-allowed"
-                              disabled
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
+      {/* Fallback */}
+      <Route path="*" element={<NotAuthorized />} />
+    </Routes>
+  );
+};
 
-const StatCard = ({ title, value, subtitle, icon }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-    <div className="flex items-center justify-between mb-2">
-      <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-      {icon}
-    </div>
-    <div className="flex flex-col">
-      <p className="text-3xl font-extrabold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
-    </div>
-  </div>
-)
-
-export default LeaveManagement
-
-
-
-
-
-
-
+export default App;
