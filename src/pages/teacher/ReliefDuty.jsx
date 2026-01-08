@@ -60,16 +60,13 @@ const ReliefDuty = () => {
       await updateDutyStatus(assignmentId, newStatus);
     } catch (error) {
       console.error("Failed to update status", error);
-      setRows(previousRows); // Revert if API fails
+      setRows(previousRows); 
       alert("Failed to update status. Please try again.");
     }
   };
 
-  // 3. Dynamic Calculations for Stats
   const dashboardStats = useMemo(() => {
-    if (!rows.length) return {
-      total: 0, upcoming: 0, month: 0, hours: 0, topSubject: "N/A", topGrade: "N/A"
-    };
+    if (!rows.length) return { total: 0, upcoming: 0, month: 0 };
 
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -77,37 +74,20 @@ const ReliefDuty = () => {
 
     let upcomingCount = 0;
     let monthCount = 0;
-    const subjectCounts = {};
-    const gradeCounts = {};
 
     rows.forEach(row => {
-    
       if (row.status !== 'completed') upcomingCount++;
 
-     
-      const rowDate = row.attendance?.date ? new Date(row.attendance.date) : new Date();
-      if (row.status === 'completed' && rowDate.getMonth() === currentMonth && rowDate.getFullYear() === currentYear) {
+      const rowDate = row.attendance?.date ? new Date(row.attendance.date) : null;
+      if (row.status === 'completed' && rowDate && rowDate.getMonth() === currentMonth && rowDate.getFullYear() === currentYear) {
         monthCount++;
       }
-
-    
-      const sub = row.subject || "Unknown";
-      subjectCounts[sub] = (subjectCounts[sub] || 0) + 1;
-
-      const grd = row.grade || "Unknown";
-      gradeCounts[grd] = (gradeCounts[grd] || 0) + 1;
     });
-
-    
-    const getTop = (obj) => Object.entries(obj).sort((a,b) => b[1] - a[1])[0]?.[0] || "None";
 
     return {
       total: rows.filter(r => r.status === 'completed').length,
       upcoming: upcomingCount,
       month: monthCount,
-      hours: rows.filter(r => r.status === 'completed').length, 
-      topSubject: getTop(subjectCounts),
-      topGrade: getTop(gradeCounts)
     };
   }, [rows]);
 
@@ -117,18 +97,12 @@ const ReliefDuty = () => {
     { label: "This Month", value: dashboardStats.month, sub: "Duties completed", icon: "📅" }
   ];
 
-  const reportCards = [
-    { label: "Total Hours", value: `${dashboardStats.hours} hrs`, icon: "⏱️" },
-    { label: "Most Taken Subject", value: dashboardStats.topSubject, icon: "📖" },
-    { label: "Most Active Grade", value: dashboardStats.topGrade, icon: "👥" }
-  ];
-
   return (
     <>
-      <Header title="Leave Management" />
+      <Header title="Relief Management" />
       <div className="p-6 bg-gray-50 min-h-screen">
         
-        {/* Stats Cards */}
+        {/* Main Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {statsCards.map((item) => (
             <div key={item.label} className="p-5 bg-white rounded-xl shadow border flex gap-3">
@@ -142,23 +116,7 @@ const ReliefDuty = () => {
           ))}
         </div>
 
-        {/* Summary Report */}
-        <div className="bg-white p-6 rounded-xl shadow mb-6 border">
-          <h2 className="font-bold text-lg mb-4">📊 Relief Duty Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {reportCards.map((r) => (
-              <div key={r.label} className="p-4 border rounded-lg flex gap-3">
-                <div className="text-xl">{r.icon}</div>
-                <div>
-                  <p className="text-xs text-gray-600">{r.label}</p>
-                  <p className="font-bold text-lg">{r.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Table */}
+        {/* Duty Schedule Table */}
         <div className="bg-white rounded-xl shadow p-6 border">
           <h2 className="font-bold text-lg mb-4">📅 My Relief Duty Schedule</h2>
 
@@ -191,7 +149,7 @@ const ReliefDuty = () => {
                         <td className="p-3 text-sm text-gray-900 font-medium">{dateStr}</td>
                         <td className="p-3 text-sm text-gray-600">{getPeriodTime(row.period)}</td>
                         <td className="p-3 text-sm text-gray-600">{row.subject}</td>
-                        <td className="p-3 text-sm text-gray-600">{row.grade}</td>
+                        <td className="p-3 text-sm text-gray-600 font-semibold">{row.grade}</td>
                         <td className="p-3">
                           <StatusBadge status={row.status} />
                         </td>
@@ -199,7 +157,7 @@ const ReliefDuty = () => {
                           <select
                             value={row.status === "completed" ? "completed" : "assigned"}
                             onChange={(e) => handleStatusChange(rowId, e.target.value)}
-                            className="border rounded px-2 py-1 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="border rounded px-2 py-1 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
                           >
                             <option value="assigned">Upcoming</option>
                             <option value="completed">Completed</option>
