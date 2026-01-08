@@ -11,8 +11,9 @@ const AdminReliefAssignment = () => {
   const [availableById, setAvailableById] = useState({})
   const [availableLoadingId, setAvailableLoadingId] = useState(null)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   
-  // NEW: State for Date Filtering (Defaults to Today)
+  // State for Date Filtering (Defaults to Today)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const AdminReliefAssignment = () => {
     loadData()
   }, [])
 
-  // NEW: Filtered Assignments based on the selected date
+  // Filtered Assignments based on the selected date
   const filteredAssignments = useMemo(() => {
     return assignments.filter((item) => {
       if (!item.attendance?.date) return false;
@@ -41,7 +42,7 @@ const AdminReliefAssignment = () => {
     });
   }, [assignments, selectedDate]);
 
-  // UPDATED: Summary now calculates stats ONLY for the filtered/selected day
+  // Summary now calculates stats ONLY for the filtered/selected day
   const summary = useMemo(() => {
     const totalAssignments = filteredAssignments.length
     const assigned = filteredAssignments.filter((item) => item.status === 'assigned').length
@@ -76,6 +77,7 @@ const AdminReliefAssignment = () => {
   const handleAssignTeacher = async (assignment) => {
     const assignmentId = assignment._id || assignment.id
     const teacherId = selection[assignmentId]
+    
     if (!teacherId) {
       setError('Please select a teacher before assigning.')
       return
@@ -85,23 +87,32 @@ const AdminReliefAssignment = () => {
       setAssigningId(assignmentId)
       setError('')
 
+      // 1. Call API
       const response = await assignReliefTeacher({ assignmentId, teacherId })
-      const updated = response?.reliefAssignment || response?.assignment || response
+      
+      // 2. Extract the updated assignment and the selected teacher details
+      const selectedTeacherObj = availableById[assignmentId]?.find(t => (t._id || t.id) === teacherId);
 
+      // 3. Update Local State
       setAssignments((prev) =>
         prev.map((item) => {
           const itemId = item._id || item.id
           if (itemId !== assignmentId) return item
+          
           return {
             ...item,
-            reliefTeacher: updated?.reliefTeacher ?? item.reliefTeacher,
-            status: updated?.status ?? 'assigned'
+            reliefTeacher: selectedTeacherObj || item.reliefTeacher,
+            status: 'assigned'
           }
         })
       )
 
+      // 4. Reset UI States & Show Success Toast
       setSelection((prev) => ({ ...prev, [assignmentId]: '' }))
       setEditingId(null) 
+      setSuccessMessage('Relief teacher assigned successfully!')
+      setTimeout(() => setSuccessMessage(''), 4000)
+
     } catch (assignError) {
       console.error(assignError)
       const message = assignError?.response?.data?.message
@@ -134,7 +145,7 @@ const AdminReliefAssignment = () => {
       <Header title="Relief Duty Assignment" />
       <section className="min-h-screen bg-[#F7F8FC] px-6 pb-10 pt-6">
         
-        {/* NEW: Date Selection Bar */}
+        {/* Date Selection Bar */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div>
                 <label className="text-sm font-medium text-slate-600 block mb-1">Select View Date</label>
@@ -159,7 +170,31 @@ const AdminReliefAssignment = () => {
           </div>
         )}
 
-        {/* Summary Cards (Now specific to filtered date) */}
+        {successMessage && (
+          <div className="mb-4 rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-500 text-white shadow-md">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-green-800">{successMessage}</p>
+                <p className="mt-1 text-xs text-green-600">Assignment updated successfully.</p>
+              </div>
+              <button
+                onClick={() => setSuccessMessage('')}
+                className="ml-auto h-6 w-6 rounded-full bg-green-100 text-green-500 hover:bg-green-200 transition-colors flex items-center justify-center"
+              >
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Daily Total</p>
@@ -200,11 +235,9 @@ const AdminReliefAssignment = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {/* UPDATED: We now map through filteredAssignments instead of all assignments */}
                 {filteredAssignments.map((assignment) => {
                   const assignmentId = assignment._id || assignment.id
                   const absentName = assignment.originalTeacher?.name || assignment.attendance?.teacher?.name || 'N/A'
-                  const displayDate = assignment.attendance?.date ? new Date(assignment.attendance.date).toLocaleDateString() : ''
                   const reliefName = assignment.reliefTeacher?.name
                   const reliefAvatar = assignment.reliefTeacher?.name?.split(' ').filter(Boolean).map((p) => p[0]).join('').slice(0, 2).toUpperCase() || '—'
                   
@@ -233,7 +266,7 @@ const AdminReliefAssignment = () => {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-sm text-slate-400">Unassigned</span>
+                          <span className="text-sm text-slate-400 italic">Unassigned</span>
                         )}
                       </td>
                       <td className="px-6 py-4">{renderStatusBadge(assignment.status)}</td>
@@ -241,12 +274,11 @@ const AdminReliefAssignment = () => {
                       <td className="px-6 py-4">
                         {assignment.status === 'assigned' && !isEditing ? (
                           <div className="flex items-center gap-4">
-                            <span className="text-sm text-slate-500">Assigned</span>
                             <button 
                               onClick={() => setEditingId(assignmentId)}
                               className="text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-tight"
                             >
-                              Edit
+                              Change Teacher
                             </button>
                           </div>
                         ) : (
@@ -276,15 +308,15 @@ const AdminReliefAssignment = () => {
                               className={`rounded-full px-4 py-2 text-sm font-semibold text-white transition ${
                                 assigningId === assignmentId || !selection[assignmentId]
                                   ? 'bg-slate-300'
-                                  : 'bg-slate-900 hover:bg-black'
+                                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
                               }`}
                             >
-                              {assigningId === assignmentId ? 'Saving…' : isEditing ? 'Update' : 'Assign'}
+                              {assigningId === assignmentId ? 'Saving…' : 'Confirm'}
                             </button>
                             {isEditing && (
                               <button 
                                 onClick={() => setEditingId(null)}
-                                className="text-xs text-red-500 hover:text-red-700"
+                                className="text-xs text-slate-400 hover:text-red-500 transition-colors"
                               >
                                 Cancel
                               </button>
@@ -295,11 +327,10 @@ const AdminReliefAssignment = () => {
                     </tr>
                   )
                 })}
-                {/* UPDATED: Show "No assignments" only if the filtered list is empty */}
                 {!filteredAssignments.length && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">
-                      {loading ? 'Loading assignments…' : `No relief assignments found for ${new Date(selectedDate).toLocaleDateString()}.`}
+                    <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500">
+                      {loading ? 'Refreshing data…' : `No relief duties found for this date.`}
                     </td>
                   </tr>
                 )}
