@@ -600,7 +600,6 @@ const Attendance = () => {
                 <thead className="text-xs text-slate-500 border-b bg-green-50">
                   <tr>
                     <th className="py-3 text-left align-middle">Teacher</th>
-                    <th className="align-middle">Subject</th>
                     <th className="align-middle text-center">Date</th>
                     <th className="align-middle text-center">Status</th>
                     <th className="align-middle text-center w-28">Check In</th>
@@ -617,13 +616,6 @@ const Attendance = () => {
 
                     <td className="py-3 font-medium align-middle">
                       {row.absentTeacher}</td>
-
-                    <td className='align-middle text-center'>
-                      <span className="text-slate-600 font-medium">
-                        {/* Showing the Subject*/}
-                        {row.subject || '-'}
-                      </span>
-                    </td>
 
                     <td className='align-middle text-center'>
                       {row.date}</td>
@@ -714,7 +706,6 @@ const Attendance = () => {
                 <thead className="text-xs text-slate-500 border-b bg-orange-50">
                   <tr>
                     <th className="py-3 text-left align-middle">Teacher</th>
-                    <th className="align-middle">Subject</th>
                     <th className="align-middle text-center">Date</th>
                     <th className="align-middle text-center">Status</th>
                     <th className="align-middle text-center w-28">Check In</th>
@@ -730,11 +721,6 @@ const Attendance = () => {
                       <tr key={teacherId || row.id} className="hover:bg-slate-50">
                         <td className="py-3 font-medium align-middle">
                           {row.absentTeacher}</td>
-                        <td className='align-middle text-center'>
-                          <span className="text-slate-600 font-medium">
-                            {row.subject || '-'}
-                          </span>
-                        </td>
                         <td className='align-middle text-center'>
                           {row.date}</td>
                         <td className='align-middle text-center'>
