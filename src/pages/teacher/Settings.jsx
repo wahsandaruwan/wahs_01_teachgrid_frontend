@@ -24,11 +24,10 @@ const StatusModal = ({ status, onClose }) => {
       <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
         <div className="flex flex-col items-center text-center">
           <div
-            className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-6 ${
-              status.type === "success"
+            className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-6 ${status.type === "success"
                 ? "bg-emerald-50 text-emerald-500"
                 : "bg-rose-50 text-rose-500"
-            }`}
+              }`}
           >
             {status.type === "success" ? (
               <CheckCircle2 size={44} />
@@ -45,9 +44,8 @@ const StatusModal = ({ status, onClose }) => {
 
           <button
             onClick={onClose}
-            className={`w-full py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest text-white ${
-              status.type === "success" ? "bg-emerald-500" : "bg-rose-500"
-            }`}
+            className={`w-full py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest text-white ${status.type === "success" ? "bg-emerald-500" : "bg-rose-500"
+              }`}
           >
             Continue
           </button>
@@ -70,7 +68,7 @@ const TeacherSettings = () => {
   const [status, setStatus] = useState({ type: "", text: "" });
   const [isEditing, setIsEditing] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3301";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -169,11 +167,10 @@ const TeacherSettings = () => {
               </div>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className={`px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest ${
-                  isEditing
+                className={`px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest ${isEditing
                     ? "bg-rose-50 text-rose-600"
                     : "bg-slate-900 text-white"
-                }`}
+                  }`}
               >
                 {isEditing ? "Cancel" : "Edit Details"}
               </button>
