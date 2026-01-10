@@ -63,7 +63,7 @@ const SettingsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3301";
 
   const showToast = useCallback((type, text) => {
     setStatus({ type, text, show: true });
@@ -196,18 +196,16 @@ const SettingsPage = () => {
       {status.show && (
         <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-slate-900/10 backdrop-blur-md">
           <div
-            className={`bg-white border ${
-              status.type === "success"
+            className={`bg-white border ${status.type === "success"
                 ? "border-emerald-100"
                 : "border-red-100"
-            } rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300`}
+              } rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300`}
           >
             <div
-              className={`w-20 h-20 ${
-                status.type === "success"
+              className={`w-20 h-20 ${status.type === "success"
                   ? "bg-emerald-50 text-emerald-500"
                   : "bg-red-50 text-red-500"
-              } rounded-full flex items-center justify-center mx-auto mb-6`}
+                } rounded-full flex items-center justify-center mx-auto mb-6`}
             >
               {status.type === "success" ? (
                 <CheckCircle2 size={40} strokeWidth={2.5} />
