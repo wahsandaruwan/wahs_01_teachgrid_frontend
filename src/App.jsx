@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react'; // useEffect ඇතුළත් කළා
+import React, { useEffect } from 'react'; 
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext';
+import { Toaster } from 'react-hot-toast';
+
+
 import SignInPage from './pages/SignInPage';
 import NotAuthorized from './pages/NotAuthorized';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -12,7 +15,7 @@ import Announcements from './pages/admin/Announcements';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
 import AdminSignup from './pages/admin/AdminSignup';
-import AdminTimeTable from './pages/admin/TimeTable'; // New import
+import AdminTimeTable from './pages/admin/TimeTable'; 
 import TeacherLayout from './pages/teacher/TeacherLayout';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherAttendance from './pages/teacher/Attendance';
@@ -20,7 +23,7 @@ import TeacherLeaveManagement from './pages/teacher/leave/LeaveManagement';
 import TeacherReliefDuty from './pages/teacher/ReliefDuty';
 import TeacherAnnouncements from './pages/teacher/Announcements';
 import TeacherSettings from './pages/teacher/Settings';
-import TeacherTimeTable from './pages/teacher/TimeTable'; // New import
+import TeacherTimeTable from './pages/teacher/TimeTable'; 
 
 const PrivateRoute = ({ children, role }) => {
   const { user, loading } = useUser();
@@ -51,6 +54,14 @@ const App = () => {
   }, []);
 
   return (
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          className: 'dark:bg-slate-800 dark:text-white rounded-xl shadow-lg border border-gray-100 dark:border-slate-700',
+          duration: 4000,
+        }}
+      />
     <Routes>
       <Route path="/" element={<SignInPage />} />
 
@@ -97,6 +108,7 @@ const App = () => {
       {/* Fallback */}
       <Route path="*" element={<NotAuthorized />} />
     </Routes>
+    </>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Calendar, ChevronLeft, ChevronRight, X, Upload } from 'lucide-react'
 
-const LeaveApplyForm = ({ onSubmit, onCancel }) => {
+const LeaveApplyForm = ({ onSubmit, onCancel, isSubmitting }) => {
   const [formData, setFormData] = useState({
     leaveType: '',
     startDate: '',
@@ -197,7 +197,15 @@ const LeaveApplyForm = ({ onSubmit, onCancel }) => {
         </div>
 
         <div className="flex gap-4 pt-4">
-          <button type="submit" className="flex-1 px-6 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Submit Request</button>
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+              isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isSubmitting ? "Submitting Request..." : "Submit Leave Request"}
+          </button>
           <button type="button" onClick={onCancel} className="px-6 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
         </div>
       </form>
