@@ -1,112 +1,105 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import {
-  Bell,
-  Users,
-  UserCheck,
-  UserX,
-  Clock,
-  TrendingUp,
-  CheckCircle,
-  XCircle
-} from "lucide-react";
+import { Users, UserCheck, UserX, Clock, TrendingUp, Bell, MapPin } from "lucide-react";
 import Header from "../../components/Header";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminDashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [totalTeachers, setTotalTeachers] = useState(0);
-  const [loadingTeachers, setLoadingTeachers] = useState(true);
-  const [errorTeachers, setErrorTeachers] = useState("");
-  const [presentToday, setPresentToday] = useState(42);
-  const [onLeave, setOnLeave] = useState(3);
-  const [pendingRequests, setPendingRequests] = useState(7);
-
-  const leaveRequests = [
-    { id: 1, name: "John Smith", initials: "JS", type: "Medical Leave", dates: "Jan 15 - Jan 17", priority: "high", submitted: "2 days ago" },
-    { id: 2, name: "Emily Davis", initials: "ED", type: "Personal Leave", dates: "Jan 20", priority: "medium", submitted: "1 day ago" },
-    { id: 3, name: "Michael Johnson", initials: "MJ", type: "Family Emergency", dates: "Jan 22 - Jan 24", priority: "high", submitted: "3 hours ago" }
-  ];
-
-  const teacherAvailability = [
-    { name: "Alice Brown", subject: "Mathematics", status: "Available" },
-    { name: "Bob Wilson", subject: "English", status: "On Leave" },
-    { name: "Carol Taylor", subject: "Science", status: "Available" },
-    { name: "David Lee", subject: "History", status: "Relief Duty" },
-    { name: "Eva Martinez", subject: "Art", status: "Available" },
-    { name: "Frank Davis", subject: "PE", status: "On Leave" }
-  ];
+  const [attendanceSummary, setAttendanceSummary] = useState({
+    present: 0,
+    late: 0,
+    leave: 0,
+    unmarked: 0
+  });
+  const [pendingLeaveCount, setPendingLeaveCount] = useState(0);
+  const [pendingReliefCount, setPendingReliefCount] = useState(0);
+  const [teacherAvailability, setTeacherAvailability] = useState([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
-      try {
-        setLoadingTeachers(true);
-        setErrorTeachers("");
+      if (!API_BASE_URL) {
+        setError("API_BASE_URL not configured");
+        setLoading(false);
+        return;
+      }
 
-        const res = await axios.get(`${API_BASE_URL}/api/admin-dashboard/stats/total-teachers`, {
-          withCredentials: true
-        });
-        
-        setTotalTeachers(res.data.totalTeachers);
+      try {
+        setLoading(true);
+        setError("");
+
+        const [summaryRes, availabilityRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/admin-dashboard/stats/today-summary`, { withCredentials: true }),
+          axios.get(`${API_BASE_URL}/api/admin-dashboard/availability/today`, { withCredentials: true })
+        ]);
+
+        const summaryData = summaryRes.data;
+
+        setTotalTeachers(summaryData.totalTeachers);
+        setAttendanceSummary(summaryData.attendanceSummary || { present: 0, late: 0, leave: 0, unmarked: 0 });
+        setPendingLeaveCount(summaryData.pendingLeaveCount || 0);
+        setPendingReliefCount(summaryData.pendingReliefCount || 0);
+        setTeacherAvailability(availabilityRes.data.teachers || []);
       } catch (err) {
         console.error("Dashboard API Error:", err);
-        
-        if (err.response?.status === 404) {
-          setErrorTeachers("API endpoint not found. Check backend routing.");
-        } else if (err.response?.status === 401) {
-          setErrorTeachers("Unauthorized. Please login again.");
-        } else if (!err.response) {
-          setErrorTeachers("Backend server not reachable. Check if server is running.");
-        } else {
-          setErrorTeachers(`Error: ${err.response?.data?.message || err.message}`);
-        }
+        setError(err.response?.data?.message || "Failed to load dashboard data");
       } finally {
-        setLoadingTeachers(false);
+        setLoading(false);
       }
     };
 
-    if (API_BASE_URL) {
-      fetchDashboardStats();
-    } else {
-      setErrorTeachers("API_BASE_URL not configured");
-      setLoadingTeachers(false);
+    fetchDashboardStats();
+  }, []);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "present": return "bg-green-100 text-green-700";
+      case "late": return "bg-yellow-100 text-yellow-700";
+      case "leave": return "bg-orange-100 text-orange-700";
+      case "unmarked": return "bg-gray-100 text-gray-600";
+      default: return "bg-gray-100 text-gray-600";
     }
-  }, [API_BASE_URL]);
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "present": return UserCheck;
+      case "late": return Clock;
+      case "leave": return UserX;
+      default: return Clock;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F8FC]">
       <Header title="Admin Dashboard" />
-      
+
       <section className="p-8 space-y-8">
-        {/* Error Message */}
-        {errorTeachers && (
+        {error && (
           <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-red-700 text-sm">
-            {errorTeachers}
+            {error}
           </div>
         )}
 
-        {/* Admin Overview */}
         <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-2xl p-8 text-white">
           <h2 className="text-3xl font-bold mb-2">Admin Overview</h2>
           <p className="text-purple-100">Manage your school's teaching staff and operations.</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Total Teachers Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          {/* Total Teachers */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-600 font-medium">Total Teachers</h3>
               <Users className="text-gray-400" size={24} />
             </div>
-            {loadingTeachers ? (
-              <p className="text-gray-400 text-xl">Loading...</p>
-            ) : errorTeachers ? (
-              <p className="text-red-600 text-sm">{errorTeachers}</p>
-            ) : (
-              <p className="text-4xl font-bold text-gray-900 mb-2">{totalTeachers}</p>
-            )}
+            <p className="text-4xl font-bold text-gray-900 mb-2">{loading ? "..." : totalTeachers}</p>
             <p className="text-sm text-gray-500">Active staff members</p>
           </div>
 
@@ -116,11 +109,16 @@ const AdminDashboard = () => {
               <h3 className="text-gray-600 font-medium">Present Today</h3>
               <UserCheck className="text-green-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-green-600 mb-2">{presentToday}</p>
+            <p className="text-4xl font-bold text-green-600 mb-2">{attendanceSummary.present}</p>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div className="bg-green-600 h-2 rounded-full" style={{ width: "93%" }}></div>
+              <div
+                className="bg-green-600 h-2 rounded-full"
+                style={{ width: `${totalTeachers ? (attendanceSummary.present / totalTeachers) * 100 : 0}%` }}
+              />
             </div>
-            <p className="text-sm text-gray-500">93% attendance</p>
+            <p className="text-sm text-gray-500">
+              {totalTeachers ? `${Math.round((attendanceSummary.present / totalTeachers) * 100)}% attendance` : "0% attendance"}
+            </p>
           </div>
 
           {/* On Leave */}
@@ -129,152 +127,112 @@ const AdminDashboard = () => {
               <h3 className="text-gray-600 font-medium">On Leave</h3>
               <UserX className="text-orange-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-orange-600 mb-2">{onLeave}</p>
+            <p className="text-4xl font-bold text-orange-600 mb-2">{attendanceSummary.leave}</p>
             <p className="text-sm text-gray-500">Teachers absent today</p>
           </div>
 
-          {/* Pending Requests */}
+          {/* Pending Leave */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-600 font-medium">Pending Requests</h3>
+              <h3 className="text-gray-600 font-medium">Pending Leave</h3>
               <Clock className="text-red-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-red-600 mb-2">{pendingRequests}</p>
+            <p className="text-4xl font-bold text-red-600 mb-2">{loading ? "..." : pendingLeaveCount}</p>
             <p className="text-sm text-gray-500">Leave requests awaiting approval</p>
+          </div>
+
+          {/* Pending Relief */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-gray-600 font-medium">Pending Relief</h3>
+              <Users className="text-emerald-500" size={24} />
+            </div>
+            <p className="text-4xl font-bold text-emerald-600 mb-2">{loading ? "..." : pendingReliefCount}</p>
+            <p className="text-sm text-gray-500">Relief duties awaiting assignment</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Leave Requests */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Clock size={24} />
-              <h3 className="text-xl font-bold">Pending Leave Requests</h3>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link
+            to="/admin/signup"
+            className="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm font-medium"
+          >
+            <Users size={16} /> Add Teacher
+          </Link>
+
+          <Link
+            to="/admin/relief-assignment"
+            className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm font-medium"
+          >
+            <Users size={16} /> Relief Assign
+          </Link>
+
+          <Link
+            to="/admin/reports"
+            className="bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 px-4 py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm font-medium"
+          >
+            <TrendingUp size={16} /> View Reports
+          </Link>
+
+          <Link
+            to="/admin/announcements"
+            className="bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 px-4 py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm font-medium"
+          >
+            <Bell size={16} /> Announcements
+          </Link>
+        </div>
+
+        {/* Teacher Availability Today */}
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-200 rounded-xl shadow-sm">
+              <MapPin className="w-5 h-5 text-slate-700" />
             </div>
-            <p className="text-gray-500 mb-6">Review and approve teacher leave applications</p>
-            
-            <div className="space-y-4">
-              {leaveRequests.map((request) => (
-                <div key={request.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-700">
-                        {request.initials}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{request.name}</h4>
-                        <p className="text-sm text-gray-600">{request.type}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-gray-700">{request.dates}</span>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              request.priority === 'high' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                            }`}
-                          >
-                            {request.priority}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Submitted {request.submitted}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
-                        <CheckCircle size={18} />
-                        Approve
-                      </button>
-                      <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
-                        <XCircle size={18} />
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button className="w-full mt-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-              View All Leave Requests
-            </button>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Teacher Availability */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <TrendingUp size={24} />
-                <h3 className="text-xl font-bold">Teacher Availability</h3>
-              </div>
-              <p className="text-gray-500 mb-6">Current status overview</p>
-
-              <div className="space-y-3">
-                {teacherAvailability.map((teacher, index) => (
-                  <div key={index} className="flex items-center justify-between py-2">
-                    <div>
-                      <p className="font-medium text-gray-900">{teacher.name}</p>
-                      <p className="text-sm text-gray-500">{teacher.subject}</p>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        teacher.status === 'Available'
-                          ? 'bg-black text-white'
-                          : teacher.status === 'On Leave'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      {teacher.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <button className="w-full mt-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-                Manage Assignments
-              </button>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-xl font-bold mb-2">Quick Actions</h3>
-              <p className="text-gray-500 mb-6">Common administrative tasks</p>
-
-              <div className="space-y-3">
-                <Link
-                  to="/admin/signup"
-                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
-                >
-                  <Users size={18} />
-                  <span className="font-medium">Add New Teacher/Admin</span>
-                </Link>
-
-                <Link
-                  to="/admin/relief-assignment"
-                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
-                >
-                  <Users size={18} />
-                  <span className="font-medium">Assign Relief Duty</span>
-                </Link>
-
-                <Link
-                  to="/admin/reports"
-                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
-                >
-                  <Users size={18} />
-                  <span className="font-medium">Generate Report</span>
-                </Link>
-
-                <Link
-                  to="/admin/announcements"
-                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
-                >
-                  <Users size={18} />
-                  <span className="font-medium">Create Announcement</span>
-                </Link>
-                 
-              </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-800">Teacher Availability Today</h3>
+              <p className="text-sm text-slate-500">Real-time attendance status</p>
             </div>
           </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400"></div>
+              <span className="ml-2 text-sm text-slate-500">Loading...</span>
+            </div>
+          ) : teacherAvailability.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+              <h4 className="text-lg font-semibold text-slate-600 mb-1">No attendance records</h4>
+              <p className="text-sm text-slate-400">No teachers have marked attendance today.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+              {teacherAvailability.map((teacher, index) => {
+                const StatusIcon = getStatusIcon(teacher.status);
+                return (
+                  <div 
+                    key={index} 
+                    className="group bg-gradient-to-br from-white to-slate-50 hover:from-slate-50 hover:to-slate-100 rounded-xl p-3 border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 h-20 flex flex-col justify-center"
+                  >
+                    <div className="flex items-start gap-2 mb-1">
+                      <div className={`p-1.5 rounded-lg ${getStatusBadge(teacher.status)} flex-shrink-0`}>
+                        <StatusIcon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-slate-800 group-hover:text-slate-900 text-sm leading-tight truncate">
+                          {teacher.teacherName}
+                        </h4>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold mt-0.5 ${getStatusBadge(teacher.status)}`}>
+                          {teacher.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </div>
