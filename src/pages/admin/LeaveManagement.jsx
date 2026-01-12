@@ -162,7 +162,7 @@ const LeaveManagement = () => {
                       {Array.isArray(leave.documents) && leave.documents.length > 0 ? (
                         <button 
                           onClick={() => {
-                            const fileUrl = `${BASE_URL}/${leave.documents[0].filePath}`;
+                            const fileUrl = leave.documents[0].filePath;
                             window.open(fileUrl, '_blank');
                           }}
                           className="..."
