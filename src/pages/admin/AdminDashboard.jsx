@@ -1,5 +1,6 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   Bell,
   Users,
@@ -9,84 +10,140 @@ import {
   TrendingUp,
   CheckCircle,
   XCircle
-} from 'lucide-react'
+} from "lucide-react";
+import Header from "../../components/Header";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminDashboard = () => {
+  const [totalTeachers, setTotalTeachers] = useState(0);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [errorTeachers, setErrorTeachers] = useState("");
+  const [presentToday, setPresentToday] = useState(42);
+  const [onLeave, setOnLeave] = useState(3);
+  const [pendingRequests, setPendingRequests] = useState(7);
+
   const leaveRequests = [
-    { id: 1, name: 'John Smith', initials: 'JS', type: 'Medical Leave', dates: 'Jan 15 - Jan 17', priority: 'high', submitted: '2 days ago' },
-    { id: 2, name: 'Emily Davis', initials: 'ED', type: 'Personal Leave', dates: 'Jan 20', priority: 'medium', submitted: '1 day ago' },
-    { id: 3, name: 'Michael Johnson', initials: 'MJ', type: 'Family Emergency', dates: 'Jan 22 - Jan 24', priority: 'high', submitted: '3 hours ago' }
-  ]
+    { id: 1, name: "John Smith", initials: "JS", type: "Medical Leave", dates: "Jan 15 - Jan 17", priority: "high", submitted: "2 days ago" },
+    { id: 2, name: "Emily Davis", initials: "ED", type: "Personal Leave", dates: "Jan 20", priority: "medium", submitted: "1 day ago" },
+    { id: 3, name: "Michael Johnson", initials: "MJ", type: "Family Emergency", dates: "Jan 22 - Jan 24", priority: "high", submitted: "3 hours ago" }
+  ];
 
   const teacherAvailability = [
-    { name: 'Alice Brown', subject: 'Mathematics', status: 'Available' },
-    { name: 'Bob Wilson', subject: 'English', status: 'On Leave' },
-    { name: 'Carol Taylor', subject: 'Science', status: 'Available' },
-    { name: 'David Lee', subject: 'History', status: 'Relief Duty' },
-    { name: 'Eva Martinez', subject: 'Art', status: 'Available' },
-    { name: 'Frank Davis', subject: 'PE', status: 'On Leave' }
-  ]
+    { name: "Alice Brown", subject: "Mathematics", status: "Available" },
+    { name: "Bob Wilson", subject: "English", status: "On Leave" },
+    { name: "Carol Taylor", subject: "Science", status: "Available" },
+    { name: "David Lee", subject: "History", status: "Relief Duty" },
+    { name: "Eva Martinez", subject: "Art", status: "Available" },
+    { name: "Frank Davis", subject: "PE", status: "On Leave" }
+  ];
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoadingTeachers(true);
+        setErrorTeachers("");
+
+        const res = await axios.get(`${API_BASE_URL}/api/admin-dashboard/stats/total-teachers`, {
+          withCredentials: true
+        });
+        
+        setTotalTeachers(res.data.totalTeachers);
+      } catch (err) {
+        console.error("Dashboard API Error:", err);
+        
+        if (err.response?.status === 404) {
+          setErrorTeachers("API endpoint not found. Check backend routing.");
+        } else if (err.response?.status === 401) {
+          setErrorTeachers("Unauthorized. Please login again.");
+        } else if (!err.response) {
+          setErrorTeachers("Backend server not reachable. Check if server is running.");
+        } else {
+          setErrorTeachers(`Error: ${err.response?.data?.message || err.message}`);
+        }
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    if (API_BASE_URL) {
+      fetchDashboardStats();
+    } else {
+      setErrorTeachers("API_BASE_URL not configured");
+      setLoadingTeachers(false);
+    }
+  }, [API_BASE_URL]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm px-8 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <button className="p-2 hover:bg-gray-100 rounded-full"><Bell size={20} /></button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">AD</div>
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F8FC]">
+      <Header title="Admin Dashboard" />
+      
+      <section className="p-8 space-y-8">
+        {/* Error Message */}
+        {errorTeachers && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-red-700 text-sm">
+            {errorTeachers}
+          </div>
+        )}
 
-      <div className="p-8">
         {/* Admin Overview */}
-        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-2xl p-8 mb-8 text-white">
+        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-2xl p-8 text-white">
           <h2 className="text-3xl font-bold mb-2">Admin Overview</h2>
           <p className="text-purple-100">Manage your school's teaching staff and operations.</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Teachers Card */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-600 font-medium">Total Teachers</h3>
               <Users className="text-gray-400" size={24} />
             </div>
-            <p className="text-4xl font-bold text-gray-900 mb-2">45</p>
+            {loadingTeachers ? (
+              <p className="text-gray-400 text-xl">Loading...</p>
+            ) : errorTeachers ? (
+              <p className="text-red-600 text-sm">{errorTeachers}</p>
+            ) : (
+              <p className="text-4xl font-bold text-gray-900 mb-2">{totalTeachers}</p>
+            )}
             <p className="text-sm text-gray-500">Active staff members</p>
           </div>
+
+          {/* Present Today */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-600 font-medium">Present Today</h3>
               <UserCheck className="text-green-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-green-600 mb-2">42</p>
+            <p className="text-4xl font-bold text-green-600 mb-2">{presentToday}</p>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div className="bg-green-600 h-2 rounded-full" style={{ width: '93%' }}></div>
+              <div className="bg-green-600 h-2 rounded-full" style={{ width: "93%" }}></div>
             </div>
             <p className="text-sm text-gray-500">93% attendance</p>
           </div>
+
+          {/* On Leave */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-600 font-medium">On Leave</h3>
               <UserX className="text-orange-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-orange-600 mb-2">3</p>
+            <p className="text-4xl font-bold text-orange-600 mb-2">{onLeave}</p>
             <p className="text-sm text-gray-500">Teachers absent today</p>
           </div>
+
+          {/* Pending Requests */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-600 font-medium">Pending Requests</h3>
               <Clock className="text-red-500" size={24} />
             </div>
-            <p className="text-4xl font-bold text-red-600 mb-2">7</p>
+            <p className="text-4xl font-bold text-red-600 mb-2">{pendingRequests}</p>
             <p className="text-sm text-gray-500">Leave requests awaiting approval</p>
           </div>
         </div>
 
-        {/* Main Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Leave Requests */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
@@ -95,7 +152,7 @@ const AdminDashboard = () => {
               <h3 className="text-xl font-bold">Pending Leave Requests</h3>
             </div>
             <p className="text-gray-500 mb-6">Review and approve teacher leave applications</p>
-
+            
             <div className="space-y-4">
               {leaveRequests.map((request) => (
                 <div key={request.id} className="border rounded-lg p-4">
@@ -140,7 +197,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* Teacher Availability & Quick Actions */}
+          {/* Right Column */}
           <div className="space-y-6">
             {/* Teacher Availability */}
             <div className="bg-white rounded-xl shadow-sm p-6">
@@ -162,8 +219,8 @@ const AdminDashboard = () => {
                         teacher.status === 'Available'
                           ? 'bg-black text-white'
                           : teacher.status === 'On Leave'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-200 text-gray-700'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-200 text-gray-700'
                       }`}
                     >
                       {teacher.status}
@@ -184,38 +241,44 @@ const AdminDashboard = () => {
 
               <div className="space-y-3">
                 <Link
-                  to="/admin/signup" // Link to your existing AdminSignup page
+                  to="/admin/signup"
                   className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
                 >
                   <Users size={18} />
                   <span className="font-medium">Add New Teacher/Admin</span>
                 </Link>
 
-                <button className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <Link
+                  to="/admin/relief-assignment"
+                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
                   <Users size={18} />
                   <span className="font-medium">Assign Relief Duty</span>
-                </button>
+                </Link>
 
-                <button className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <Link
+                  to="/admin/reports"
+                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
                   <Users size={18} />
                   <span className="font-medium">Generate Report</span>
-                </button>
+                </Link>
 
-                <button className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3">
-                  <Bell size={18} />
+                <Link
+                  to="/admin/announcements"
+                  className="w-full py-3 px-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <Users size={18} />
                   <span className="font-medium">Create Announcement</span>
-                </button>
+                </Link>
+                 
               </div>
-
-              <button className="w-full mt-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
-                Generate Reports
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;
