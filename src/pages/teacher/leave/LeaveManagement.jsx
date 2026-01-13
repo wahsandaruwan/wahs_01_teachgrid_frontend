@@ -1,71 +1,123 @@
-import { useState } from "react";
-import { Calendar, CheckCircle, Clock, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Calendar, CheckCircle, Clock, FileText} from "lucide-react";
 import LeaveHistory from "./LeaveHistory";
 import LeaveApplyForm from "./LeaveApplyForm";
+import toast from 'react-hot-toast';
 
-const LeaveManagement = ({
-  availableLeave = 15,
-  usedLeave = 10,
-  pendingLeave = 1,
-  thisMonthLeave = 2,
-  leaveHistory = [
-    {
-      id: 1,
-      type: "Annual Leave",
-      dates: "2024-01-15 - 2024-01-17",
-      days: 3,
-      reason: "Personal vacation",
-      status: "Approved",
-      submitted: "2024-01-01",
-    },
-    {
-      id: 2,
-      type: "Medical Leave",
-      dates: "2024-01-22",
-      days: 1,
-      reason: "Medical appointment",
-      status: "Pending",
-      submitted: "2024-01-15",
-    },
-  ],
-}) => {
+
+const LeaveManagement = () => {
   const [activeTab, setActiveTab] = useState("history");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [leaveHistory, setLeaveHistory] = useState([]);
+  const [statsData, setStatsData] = useState({
+    available: 0,
+    used: 0,
+    pending: 0,
+    thisMonth: 0
+  });
 
-  const handleLeaveSubmit = (formData) => {
-    console.log("Leave submitted:", formData);
-    // Handle submission logic here
-    setActiveTab("history");
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!backendUrl){
+    return "Unable to find backend URL";
+  }
+
+  const token = localStorage.getItem('token');
+
+  // API Call to fetch leave data
+  const fetchLeaveData = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/leave/list`, {
+        headers: { token }
+      });
+
+      if (response.data.success) {
+        // Update History
+        setLeaveHistory(response.data.leaves);
+
+        // calculating stats
+        const approved = response.data.leaves.filter(l => l.status === 'Approved');
+        const pending = response.data.leaves.filter(l => l.status === 'Pending');
+        const usedCount = approved.reduce((acc, curr) => acc + curr.totalDays, 0);
+
+        setStatsData({
+          available: 41 - usedCount, 
+          used: usedCount,
+          pending: pending.length,
+          thisMonth: 0 // Logic for this will be added later
+        });
+      }
+    } catch (error){
+      console.error("Error fetching leaves:", error);
+    }
   };
 
+  useEffect(() => {
+    fetchLeaveData();
+  }, []);
+
+ 
+  // API call to Submit leave
+  const handleLeaveSubmit = async (formData) => {
+
+    setIsSubmitting(true);
+
+    // Converting standard object to FormData for Multer
+    const data = new FormData();
+    data.append('leaveType', formData.leaveType);
+    data.append('startDate', formData.startDate);
+    data.append('endDate', formData.endDate);
+    data.append('reason', formData.reason);
+    
+    // Appending files for backend processing 
+    formData.documents.forEach((file) => {
+      data.append('documents', file);
+    });
+
+    try {
+      const response = await axios.post(`${backendUrl}/api/leave/apply`, data, {
+        headers: { 
+          token,
+          'Content-Type': 'multipart/form-data' 
+        }
+      });
+
+      if (response.data.success) {
+        toast.success('Leave Request Submitted Successfully!', {
+          duration: 4000,
+          style: {
+              borderRadius: '12px',
+              background: '#fff',
+              color: '#1f2937',
+              border: '1px solid #e5e7eb',
+              padding: '16px',
+              fontSize: '14px',
+              fontWeight: '500'
+          },
+          iconTheme: {
+              primary: '#2563eb', // Matches your blue-600
+              secondary: '#fff',
+          },
+      });
+        fetchLeaveData(); 
+        setActiveTab("history"); 
+      }
+      else{
+        toast.error("Error: " + response.data.message);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Submission failed");
+    } finally{
+      setIsSubmitting(false);
+    }
+  };
+
+
   const stats = [
-    {
-      title: "Available Leave",
-      value: availableLeave,
-      subtitle: "Days remaining this year",
-      icon: Calendar,
-      color: "blue",
-    },
-    {
-      title: "Used Leave",
-      value: usedLeave,
-      subtitle: "Days taken this year",
-      icon: CheckCircle,
-      color: "green",
-    },
-    {
-      title: "Pending",
-      value: pendingLeave,
-      subtitle: "Awaiting approval",
-      icon: Clock,
-      color: "yellow",
-    },
-    {
-      title: "This Month",
-      value: thisMonthLeave,
-      subtitle: "Days taken",
-      icon: FileText,
-      color: "purple",
-    },
+    { title: "Available Leave", value: statsData.available, subtitle: "Days remaining", icon: Calendar, color: "blue" },
+    { title: "Used Leave", value: statsData.used, subtitle: "Days taken this year", icon: CheckCircle, color: "green" },
+    { title: "Pending", value: statsData.pending, subtitle: "Awaiting approval", icon: Clock, color: "yellow" },
+    { title: "This Month", value: statsData.thisMonth, subtitle: "Days taken", icon: FileText, color: "purple" }
   ];
 
   const colorClasses = {
@@ -153,6 +205,7 @@ const LeaveManagement = ({
         <LeaveApplyForm
           onSubmit={handleLeaveSubmit}
           onCancel={() => setActiveTab("history")}
+          isSubmitting={isSubmitting}
         />
       ) : (
         <LeaveHistory leaveHistory={leaveHistory} />

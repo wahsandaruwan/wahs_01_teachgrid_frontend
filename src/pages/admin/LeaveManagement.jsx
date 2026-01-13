@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { fetchAllLeaves, fetchLeaveStats, updateLeaveStatus } from '../../services/leaveService'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3301';
+
 const LeaveManagement = () => {
   const [leaves, setLeaves] = useState([])
   const [stats, setStats] = useState({
@@ -156,10 +158,17 @@ const LeaveManagement = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {leave.documents !== 'None' ? (
-                        <button className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-black">
+                      {/* Check if documents exist and is an array with items */}
+                      {Array.isArray(leave.documents) && leave.documents.length > 0 ? (
+                        <button 
+                          onClick={() => {
+                            const fileUrl = leave.documents[0].filePath;
+                            window.open(fileUrl, '_blank');
+                          }}
+                          className="..."
+                        >
                           <Eye size={16} className="mr-1" />
-                          View (1)
+                          View ({leave.documents.length})
                         </button>
                       ) : (
                         <span className="text-sm text-gray-400">None</span>

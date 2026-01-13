@@ -30,16 +30,24 @@ const LeaveHistory = ({ leaveHistory = [] }) => {
             ) : (
               leaveHistory.map((leave, index) => (
                 <tr 
-                  key={leave.id} 
+                  // Uses MongoDB's unique _id as the React key
+                  key={leave._id || index} 
                   className={`border-b border-gray-50 hover:bg-blue-50 transition-colors ${
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   }`}
                 >
-                  <td className="py-4 px-4 text-sm font-semibold text-gray-900">{leave.type}</td>
-                  <td className="py-4 px-4 text-sm text-gray-600">{leave.dates}</td>
+                  <td className="py-4 px-4 text-sm font-semibold text-gray-900">
+                    {leave.leaveType || leave.type}
+                  </td>
+                  
+                  {/* Formats backend ISO date strings into readable mm/dd/yyyy format */}
+                  <td className="py-4 px-4 text-sm text-gray-600">
+                    {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                  </td>
+                  
                   <td className="py-4 px-4">
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 font-bold rounded-lg text-sm">
-                      {leave.days}
+                      {leave.totalDays || leave.days}
                     </span>
                   </td>
                   <td className="py-4 px-4 text-sm text-gray-600">{leave.reason}</td>
@@ -59,7 +67,11 @@ const LeaveHistory = ({ leaveHistory = [] }) => {
                       {leave.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-600">{leave.submitted}</td>
+                  
+                  {/* Formats the automatic "appliedAt" timestamp from the database */}
+                  <td className="py-4 px-4 text-sm text-gray-600">
+                    {new Date(leave.appliedAt || leave.submitted).toLocaleDateString()}
+                  </td>
                 </tr>
               ))
             )}
