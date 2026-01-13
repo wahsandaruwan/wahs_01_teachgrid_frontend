@@ -12,9 +12,6 @@ import {
   User
 } from "lucide-react";
 
-/* =======================
-   API CONFIG
-======================= */
 const API = import.meta.env.VITE_API_BASE_URL;
 
 /* =======================
@@ -25,7 +22,6 @@ const TopBar = () => (
     <h2 className="text-2xl font-semibold text-gray-800">
       Teacher Dashboard
     </h2>
-
     <div className="flex items-center gap-4">
       <button className="p-2 hover:bg-gray-100 rounded-full">
         <Megaphone size={20} />
@@ -46,9 +42,7 @@ const StatBox = ({ title, value, subtitle, icon, bar }) => (
       <p className="text-gray-600 font-medium">{title}</p>
       {icon}
     </div>
-
     <h2 className="text-3xl font-bold mt-3">{value}</h2>
-
     {bar && (
       <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
         <div
@@ -57,7 +51,6 @@ const StatBox = ({ title, value, subtitle, icon, bar }) => (
         />
       </div>
     )}
-
     {subtitle && (
       <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
     )}
@@ -69,21 +62,18 @@ const StatBox = ({ title, value, subtitle, icon, bar }) => (
 ======================= */
 const QuickActions = () => {
   const navigate = useNavigate();
-
   return (
     <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
       <div className="flex justify-between items-center">
         <p className="text-gray-600 font-medium">Quick Actions</p>
         <FileText size={20} className="text-gray-500" />
       </div>
-
       <button
         onClick={() => navigate("/teacher/leave")}
         className="w-full mt-4 border border-gray-300 rounded-lg p-2 hover:bg-gray-100"
       >
         Apply Leave
       </button>
-
       <button
         onClick={() => navigate("/teacher/attendance")}
         className="w-full mt-3 border border-gray-300 rounded-lg p-2 hover:bg-gray-100"
@@ -101,34 +91,21 @@ const ReliefDuties = ({ data }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
-      <div>
-        <h3 className="font-semibold text-lg flex items-center gap-2">
-          <CalendarClock size={20} />
-          Upcoming Relief Duties
-        </h3>
+    <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
+      <h3 className="font-semibold text-lg flex items-center gap-2">
+        <CalendarClock size={20} /> Upcoming Relief Duties
+      </h3>
 
-        {!data ? (
-          <p className="text-sm text-gray-500 mt-4">
-            No upcoming relief duties
-          </p>
-        ) : (
-          <div className="mt-4 bg-gray-50 p-4 rounded-lg flex justify-between">
-            <div>
-              <p className="font-semibold flex items-center gap-2">
-                <Clock size={18} />
-                {data.startTime} – {data.endTime}
-              </p>
-              <p className="text-gray-600">
-                {data.subject} - {data.grade}
-              </p>
-            </div>
-            <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">
-              {new Date(data.date).toLocaleDateString()}
-            </span>
-          </div>
-        )}
-      </div>
+      {!data ? (
+        <p className="text-sm text-gray-500 mt-4">No upcoming relief duties</p>
+      ) : (
+        <div className="mt-4 bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+          <p className="font-semibold text-gray-800">{data.className || "Relief Class"}</p>
+          <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">
+            {new Date(data.date).toLocaleDateString()}
+          </span>
+        </div>
+      )}
 
       <button
         onClick={() => navigate("/teacher/relief-duty")}
@@ -140,8 +117,9 @@ const ReliefDuties = ({ data }) => {
   );
 };
 
+
 /* =======================
-   ANNOUNCEMENTS
+   ANNOUNCEMENTS 
 ======================= */
 const AnnouncementPreview = ({ data }) => {
   const navigate = useNavigate();
@@ -150,8 +128,7 @@ const AnnouncementPreview = ({ data }) => {
     <div className="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
       <div>
         <h3 className="font-semibold text-lg flex items-center gap-2">
-          <Megaphone size={20} />
-          Latest Announcement
+          <Megaphone size={20} /> Latest Announcement
         </h3>
 
         {!data ? (
@@ -199,7 +176,7 @@ export default function TeacherDashboard() {
           { withCredentials: true }
         );
         setDashboard(res.data);
-      } catch (err) {
+      } catch {
         setError("Failed to load dashboard");
       } finally {
         setLoading(false);
@@ -211,6 +188,10 @@ export default function TeacherDashboard() {
 
   if (loading) return <p className="p-10">Loading dashboard...</p>;
   if (error) return <p className="p-10 text-red-600">{error}</p>;
+
+  //  normalize upcoming relief (ARRAY or OBJECT)
+  const upcomingRelief = dashboard.upcomingRelief;
+  <ReliefDuties data={upcomingRelief} />
 
   return (
     <main className="flex-1 p-10 space-y-8 bg-gray-50">
@@ -251,7 +232,7 @@ export default function TeacherDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReliefDuties data={dashboard.upcomingRelief} />
+        <ReliefDuties data={upcomingRelief} />
         <AnnouncementPreview data={dashboard.latestAnnouncement} />
       </div>
     </main>
