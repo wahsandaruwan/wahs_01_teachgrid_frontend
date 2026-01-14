@@ -524,7 +524,7 @@ const Attendance = () => {
           <StatCard title="Overall Rate" value={stats.overallRate} subtitle="School average" icon={<CheckCircle className="text-green-500" />} />
           <StatCard title="Present Today" value={stats.presentToday.toString()} subtitle={`Out of ${stats.total}`} icon={<CheckCircle className="text-green-500" />} />
           <StatCard title="On Leave" value={stats.onLeave.toString()} subtitle="Approved" icon={<XCircle className="text-red-500" />} />
-          <StatCard title="Late Arrivals" value={stats.lateArrivals.toString()} subtitle="After 9:00 AM" icon={<Clock className="text-yellow-500" />} />
+          <StatCard title="Late Arrivals" value={stats.lateArrivals.toString()} subtitle="After 7:30 AM" icon={<Clock className="text-yellow-500" />} />
         </div>
 
         {/* Table Card */}

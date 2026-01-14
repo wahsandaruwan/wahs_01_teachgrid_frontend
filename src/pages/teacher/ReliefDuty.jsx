@@ -35,7 +35,6 @@ const StatusBadge = ({ status }) => {
 const ReliefDuty = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  // State for date filter - defaults to today
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
@@ -67,7 +66,6 @@ const ReliefDuty = () => {
     }
   };
 
-  // Logic to filter rows based on selected date
   const filteredRows = useMemo(() => {
     if (!filterDate) return rows;
     return rows.filter((row) => {
@@ -77,10 +75,12 @@ const ReliefDuty = () => {
     });
   }, [rows, filterDate]);
 
+  // Updated dashboard stats
   const dashboardStats = useMemo(() => {
     if (!rows.length) return { total: 0, upcoming: 0, month: 0 };
 
     const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
@@ -88,7 +88,14 @@ const ReliefDuty = () => {
     let monthCount = 0;
 
     rows.forEach(row => {
-      if (row.status !== 'completed') upcomingCount++;
+      const rowDateStr = row.attendance?.date
+        ? new Date(row.attendance.date).toISOString().split('T')[0]
+        : null;
+
+      // Upcoming = assigned for today only
+      if (row.status !== 'completed' && rowDateStr === todayStr) {
+        upcomingCount++;
+      }
 
       const rowDate = row.attendance?.date ? new Date(row.attendance.date) : null;
       if (row.status === 'completed' && rowDate && rowDate.getMonth() === currentMonth && rowDate.getFullYear() === currentYear) {
@@ -105,7 +112,7 @@ const ReliefDuty = () => {
 
   const statsCards = [
     { label: "My Relief Duties", value: dashboardStats.total, sub: "Completed this year", icon: "📚" },
-    { label: "Upcoming", value: dashboardStats.upcoming, sub: "To be completed", icon: "⏰" },
+    { label: "Upcoming", value: dashboardStats.upcoming, sub: "Today’s duties", icon: "⏰" },
     { label: "This Month", value: dashboardStats.month, sub: "Duties completed", icon: "📅" }
   ];
 
@@ -133,7 +140,7 @@ const ReliefDuty = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
             <h2 className="font-bold text-lg">📅 My Relief Duty Schedule</h2>
             
-            {/* Date Filter UI */}
+            {/* Date Filter */}
             <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm bg-white shadow-sm hover:border-blue-400 transition-colors">
               <input
                 type="date"
