@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
   if (loading) return <p className="p-10">Loading dashboard...</p>;
   if (error) return <p className="p-10 text-red-600">{error}</p>;
 
-  /*  normalize upcoming relief */
+  /* normalize upcoming relief */
   const upcomingRelief = dashboard.upcomingRelief;
 
 
