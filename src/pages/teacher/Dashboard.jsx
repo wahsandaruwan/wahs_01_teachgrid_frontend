@@ -17,9 +17,7 @@ const API = import.meta.env.VITE_API_BASE_URL;
 
 
 
-/* =======================
-   STAT BOX
-======================= */
+/* stat box */
 const StatBox = ({ title, value, subtitle, icon }) => (
   <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
     <div className="flex justify-between items-center">
@@ -33,9 +31,7 @@ const StatBox = ({ title, value, subtitle, icon }) => (
   </div>
 );
 
-/* =======================
-   QUICK ACTIONS
-======================= */
+/* quick action buttons */
 const QuickActions = () => {
   const navigate = useNavigate();
   return (
@@ -60,9 +56,7 @@ const QuickActions = () => {
   );
 };
 
-/* =======================
-   RELIEF DUTIES
-======================= */
+/* relief duty card view */
 const ReliefDuties = ({ data }) => {
   const navigate = useNavigate();
 
@@ -117,9 +111,7 @@ const ReliefDuties = ({ data }) => {
  
 
 
-/* =======================
-   ANNOUNCEMENTS 
-======================= */
+/* Announcement card view */
 const AnnouncementPreview = ({ data }) => {
   const navigate = useNavigate();
 
@@ -159,9 +151,7 @@ const AnnouncementPreview = ({ data }) => {
   );
 };
 
-/* =======================
-   MAIN DASHBOARD
-======================= */
+/*main dashboard */
 export default function TeacherDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -188,7 +178,7 @@ export default function TeacherDashboard() {
   if (loading) return <p className="p-10">Loading dashboard...</p>;
   if (error) return <p className="p-10 text-red-600">{error}</p>;
 
-  //  normalize upcoming relief 
+  /*  normalize upcoming relief */
   const upcomingRelief = dashboard.upcomingRelief;
 
 
