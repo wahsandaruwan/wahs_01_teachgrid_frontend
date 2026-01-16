@@ -71,16 +71,25 @@ export const UserProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
+    let isMounted = true;
     const controller = new AbortController()
 
     const bootstrapAuth = async () => {
-      await fetchCurrentUser(controller.signal)
-      setLoading(false)
+    try {
+      await fetchCurrentUser(controller.signal);
+    } catch (err) {
+      // Error is handled inside fetchCurrentUser
+    } finally {
+      // ONLY set loading to false if this specific mount is still active
+      if (isMounted) {
+        setLoading(false);
+      }
     }
+  };
 
     bootstrapAuth()
 
-    return () => controller.abort()
+    return () => {isMounted = false; controller.abort(); };
   }, [fetchCurrentUser])
 
   const refreshUser = useCallback(() => fetchCurrentUser(), [fetchCurrentUser])

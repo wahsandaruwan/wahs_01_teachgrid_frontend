@@ -43,6 +43,9 @@ const PrivateRoute = ({ children, role }) => {
 };
 
 const App = () => {
+
+  const { user, loading } = useUser();
+  
   // Check Dark Mode status when the app starts
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -52,6 +55,14 @@ const App = () => {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black dark:border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <>
