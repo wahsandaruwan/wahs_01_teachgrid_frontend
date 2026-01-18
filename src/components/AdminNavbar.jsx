@@ -128,14 +128,22 @@ const AdminNavbar = () => {
       </div>
 
       <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-5 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none">
-          {(user.name || 'U')
-            .split(' ')
-            .filter(Boolean)
-            .map((part) => part.charAt(0))
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden">
+          {/* Updated the Avatar display section here */}
+          {user.avatar ? (
+            <img 
+              src={user.avatar} 
+              alt="Admin" 
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            (user.name || 'U')
+              .split(' ')
+              .filter(Boolean)
+              .map((part) => part.charAt(0))
+              .join('')
+              .slice(0, 2)
+              .toUpperCase())}
         </div>
         <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">{user.name}</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>

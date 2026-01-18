@@ -1,146 +1,163 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useUser } from "../../contexts/UserContext"; 
 import {
   Trash2,
   Loader2,
-  Edit3,
   Search,
   Mail,
-  Phone,
-  MapPin,
   X,
   Lock,
-  ShieldCheck,
   Plus,
   Save,
-  ChevronRight,
   AlertCircle,
   User,
-  Settings2,
   CheckCircle2,
+  KeyRound,
+  MapPin,
+  Phone,
 } from "lucide-react";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-
-  // Core Data States
+  const { setUser } = useUser(); 
+  
+  // State for storing admin profile data
   const [adminData, setAdminData] = useState({
     name: "",
     email: "",
     phoneNum: "",
     address: "",
+    avatar: "",
   });
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [showPasswordFields, setShowPasswordFields] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
   const [status, setStatus] = useState({ type: "", text: "", show: false });
-
-  // UI/Modal States
-
   const [selectedTeacher, setSelectedTeacher] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAdminEditModal, setShowAdminEditModal] = useState(false);
-  const [showTeacherPasswordFields, setShowTeacherPasswordFields] =
-    useState(false);
+  const [showPassModal, setShowPassModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Form States
-  const [teacherForm, setTeacherForm] = useState({
-    name: "",
-    email: "",
-    address: "",
-    phoneNum: "",
-    password: "",
-  });
-
-  // Updated tempAdminData to include password
   const [tempAdminData, setTempAdminData] = useState({
     name: "",
     phoneNum: "",
     address: "",
-    password: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
 
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3301";
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3301";
 
+  // display notification messages (Toast)
   const showToast = useCallback((type, text) => {
     setStatus({ type, text, show: true });
     setTimeout(() => setStatus({ type: "", text: "", show: false }), 3000);
   }, []);
 
-  // Validation Helper Function
-  const validateForm = (data) => {
-    const { email, phoneNum, name } = data;
-    const displayName = name || email || "User";
-
-    // 1. Phone Number Validation
-    const phoneRegex = /^\d{10}$/;
-    if (phoneNum && !phoneRegex.test(phoneNum)) {
-      showToast(
-        "error",
-        `Hi ${displayName}, please enter a valid phone number.`
-      );
-      return false;
-    }
-
-    // 2. Email Validation
-    if (email !== undefined) {
-      if (!email.includes("@")) {
-        showToast("error", "Invalid email address (must contain @)");
-        return false;
-      }
-    }
-    return true;
-  };
-
-  // Initial Data Fetch
+  // fetch all necessary data from the server
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const config = { withCredentials: true };
-      const [adminRes, teachersRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/admin/data`, config),
-        axios.get(`${API_BASE_URL}/api/admin/teachers`, config),
-      ]);
+      const adminRes = await axios.get(`${API_BASE_URL}/api/admin/data`, config);
+      const teachersRes = await axios.get(`${API_BASE_URL}/api/admin/teachers`, config);
 
-      // Role validation
-      const userData = adminRes.data?.UserData || adminRes.data?.admin;
-      if (!userData || userData.role !== "admin") {
-        navigate("/login");
-        return;
+      if (adminRes.data?.success) {
+        const data = adminRes.data.UserData || adminRes.data.admin;
+        setAdminData(data);
+        setUser(data); 
       }
-
-      if (adminRes.data?.success) setAdminData(userData);
-      if (teachersRes.data?.success)
+      if (teachersRes.data?.success) {
         setTeachers(teachersRes.data.teachers || []);
-    } catch (error) {
-      console.error("Fetch Error:", error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        navigate("/login");
       }
+    } catch (err) {
+      console.error("Fetch Error:", err);
       showToast("error", "Failed to sync data");
+      if (err.response?.status === 401) navigate("/login");
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, showToast, navigate]);
+  }, [API_BASE_URL, navigate, showToast, setUser]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Admin Update
+  // Handle profile picture selection and upload
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      setUpdating(true);
+      try {
+        const res = await axios.post(
+          `${API_BASE_URL}/api/admin/update-avatar`,
+          { image: reader.result },
+          { withCredentials: true }
+        );
+
+        if (res.data?.success) {
+          const newAvatarUrl = res.data.avatar;
+          setAdminData((prev) => ({ ...prev, avatar: newAvatarUrl }));
+          setUser((prevUser) => ({ ...prevUser, avatar: newAvatarUrl }));
+          showToast("success", "Profile picture updated!");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("error", "Failed to upload image");
+      } finally {
+        setUpdating(false);
+      }
+    };
+  };
+
+  // Handle removing the current profile picture
+  const handleRemoveAvatar = async () => {
+    setUpdating(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/api/admin/update-avatar`,
+        { image: "" }, 
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        setAdminData((prev) => ({ ...prev, avatar: "" }));
+        setUser((prevUser) => ({ ...prevUser, avatar: "" }));
+        showToast("success", "Avatar removed successfully!");
+      }
+    } catch (err) {
+      console.error("Remove Avatar Error:", err);
+      showToast("error", "Server error while removing avatar");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Handle general profile updates and password resets
   const handleAdminUpdate = async (e) => {
-    e.preventDefault();
-    if (!validateForm(tempAdminData, adminData.email)) return;
+    if (e) e.preventDefault();
+    
+    const isResettingPassword = !!(tempAdminData.newPassword && tempAdminData.newPassword.trim() !== "");
+
+    if (showPassModal) {
+      if (!tempAdminData.currentPassword || !tempAdminData.newPassword) {
+        showToast("error", "Please fill all password fields");
+        return;
+      }
+      if (tempAdminData.newPassword !== tempAdminData.confirmPassword) {
+        showToast("error", "Passwords do not match!");
+        return;
+      }
+    }
 
     setUpdating(true);
     try {
@@ -148,8 +165,12 @@ const SettingsPage = () => {
         name: tempAdminData.name,
         phoneNum: tempAdminData.phoneNum,
         address: tempAdminData.address,
-        newPassword: tempAdminData.password,
       };
+
+      if (isResettingPassword) {
+        payload.currentPassword = tempAdminData.currentPassword;
+        payload.password = tempAdminData.newPassword;
+      }
 
       const res = await axios.patch(
         `${API_BASE_URL}/api/admin/update`,
@@ -158,239 +179,177 @@ const SettingsPage = () => {
       );
 
       if (res.data?.success) {
-        setAdminData((prev) => ({
-          ...prev,
-          name: tempAdminData.name,
-          phoneNum: tempAdminData.phoneNum,
-          address: tempAdminData.address,
-        }));
-        setTempAdminData((prev) => ({ ...prev, password: "" }));
+        const updatedUser = res.data.UserData || res.data.admin;
+        setAdminData(updatedUser);
+        setUser(updatedUser); 
+        
+        const successMsg = isResettingPassword 
+          ? "Password reset successfully!" 
+          : "Settings Saved Successfully!";
+          
+        showToast("success", successMsg);
 
-        showToast("success", "Profile & Security updated! Check your email.");
         setShowAdminEditModal(false);
-        setShowPasswordFields(false);
+        setShowPassModal(false);
+        
+        setTempAdminData(prev => ({
+          ...prev,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        }));
+
+        fetchData();
       }
-    } catch (error) {
-      console.error("Update Error:", error);
-      showToast(
-        "error",
-        error.response?.data?.message || "Failed to update admin"
-      );
+    } catch (err) {
+      console.error(err);
+      showToast("error", err.response?.data?.message || "Update Failed");
     } finally {
       setUpdating(false);
     }
   };
 
-  // Teacher Update
-  const handleTeacherUpdate = async (e) => {
-    e.preventDefault();
-    if (!validateForm(teacherForm)) return;
-
-    setUpdating(true);
-    try {
-      const payload = {
-        name: teacherForm.name,
-        email: teacherForm.email,
-        address: teacherForm.address,
-        phoneNum: teacherForm.phoneNum,
-        ...(teacherForm.password && { newPassword: teacherForm.password }),
-      };
-
-      const res = await axios.patch(
-        `${API_BASE_URL}/api/admin/teachers/${selectedTeacher._id}`,
-        payload,
-        { withCredentials: true }
-      );
-
-      if (res.data?.success) {
-        setTeachers((prev) =>
-          prev.map((t) =>
-            t._id === selectedTeacher._id
-              ? { ...t, ...teacherForm, password: "" }
-              : t
-          )
-        );
-        showToast("success", "Record updated & email sent");
-        setShowEditModal(false);
-        setShowTeacherPasswordFields(false);
-      }
-    } catch (error) {
-      console.error("Teacher Update Error:", error);
-      showToast("error", error.response?.data?.message || "Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  // Delete Teacher
+  // Handle teacher account deletion
   const handleDeleteTeacher = async () => {
+    setDeleting(true);
     try {
       const res = await axios.delete(
         `${API_BASE_URL}/api/admin/teachers/${selectedTeacher._id}`,
         { withCredentials: true }
       );
+
       if (res.data?.success) {
-        setTeachers((prev) =>
-          prev.filter((t) => t._id !== selectedTeacher._id)
-        );
-        showToast("success", "Teacher removed from system");
+        setTeachers((prev) => prev.filter((t) => t._id !== selectedTeacher._id));
+        showToast("success", "Account Removed");
         setShowDeleteModal(false);
       }
-    } catch (error) {
-      console.error("Delete Error:", error);
-      showToast("error", "Deletion failed");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Could not delete user");
     } finally {
       setDeleting(false);
     }
   };
 
-  const handleSearchTrigger = () => {
-    setActiveSearch(searchQuery);
-  };
-
-  const arialFont = { fontFamily: "Arial, Helvetica, sans-serif" };
-
   if (loading)
     return (
-      <div
-        className="h-screen flex items-center justify-center bg-[#F9FAFB]"
-        style={arialFont}
-      >
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      <div className="h-screen flex items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-indigo-600" size={40} />
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] p-6 lg:p-10" style={arialFont}>
-      {/* STATUS TOAST */}
+    <div className="min-h-screen bg-[#F9FAFB] p-6 lg:p-10">
       {status.show && (
-        <div className="fixed inset-0 z-[5000] flex items-center justify-center p-6 bg-slate-900/10 backdrop-blur-md">
+        <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/10 backdrop-blur-sm transition-all animate-in fade-in">
           <div
-            className={`bg-white border ${
-              status.type === "success"
-                ? "border-emerald-100"
-                : "border-red-100"
-            } rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300`}
+            className={`bg-white p-10 rounded-[2.5rem] shadow-2xl text-center border-t-4 transition-all scale-in-center ${
+              status.type === "success" ? "border-green-500" : "border-red-500"
+            }`}
           >
-            <div
-              className={`w-20 h-20 ${
-                status.type === "success"
-                  ? "bg-emerald-50 text-emerald-500"
-                  : "bg-red-50 text-red-500"
-              } rounded-full flex items-center justify-center mx-auto mb-6`}
-            >
-              {status.type === "success" ? (
-                <CheckCircle2 size={40} strokeWidth={2.5} />
-              ) : (
-                <AlertCircle size={40} strokeWidth={2.5} />
-              )}
-            </div>
-            <h3 className="text-xl font-bold tracking-tight text-gray-900 mb-2">
-              {status.type === "success" ? "Success!" : "Failed"}
-            </h3>
-            <p className="text-[12px] font-semibold text-gray-500 uppercase tracking-widest leading-relaxed">
-              {status.text}
-            </p>
+            {status.type === "success" ? (
+              <CheckCircle2 className="mx-auto text-green-500 mb-4" size={50} />
+            ) : (
+              <AlertCircle className="mx-auto text-red-500 mb-4" size={50} />
+            )}
+            <h3 className="font-bold text-xl text-gray-800">{status.text}</h3>
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
-        {/* ADMIN PROFILE SECTION */}
-        <div className="bg-gray-100 rounded-3xl p-8 mb-8 border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center group">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-3xl p-8 mb-8 border border-gray-100 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
           <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner transition-colors">
-                <User size={40} />
+            <div className="relative group/avatar">
+              <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden shadow-inner relative transition-transform">
+                {adminData.avatar ? (
+                  <>
+                    <img src={adminData.avatar} alt="Admin" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={handleRemoveAvatar}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200"
+                    >
+                      <Trash2 size={24} className="text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <User size={35} />
+                )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+              
+              <div className="absolute -bottom-2 -right-2">
+                <label className="bg-white p-2 rounded-xl shadow-lg border border-gray-100 cursor-pointer hover:bg-gray-50 hover:scale-110 transition-all active:scale-90 flex items-center justify-center">
+                  <Plus size={14} className="text-indigo-600" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                </label>
+              </div>
             </div>
+
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-                {adminData.name}
+              <h2 className="text-2xl font-bold text-gray-800">
+                {adminData.name || "Administrator"}
               </h2>
-              <div className="flex items-center gap-4 mt-1">
-                <span className="text-sm text-gray-400 flex items-center gap-1 font-medium">
-                  <Mail size={14} /> {adminData.email}
-                </span>
+              <div className="flex flex-col gap-1 mt-1">
+                <div className="flex items-center gap-2 text-gray-400 font-medium">
+                  <Mail size={13} />
+                  <p className="text-xs">{adminData.email}</p>
+                </div>
+                <div className="flex items-center gap-2 text-gray-400 font-medium">
+                  <MapPin size={13} />
+                  <p className="text-xs">{adminData.address || "Add address..."}</p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="mt-6 md:mt-0 flex flex-col md:items-end gap-3">
-            <button
-              onClick={() => {
-                setTempAdminData({
-                  name: adminData.name,
-                  phoneNum: adminData.phoneNum,
-                  address: adminData.address,
-                  password: "",
-                });
-                setShowAdminEditModal(true);
-              }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-indigo-600 hover:text-white text-white rounded-xl text-xs font-bold transition-all border border-gray-100"
-            >
-              <Edit3 size={14} /> Edit My Profile
-            </button>
-            <div className="flex gap-4 text-[11px] text-gray-400 font-bold uppercase tracking-tight">
-              <span className="flex items-center gap-1">
-                <MapPin size={12} /> {adminData.address || "No Address"}
-              </span>
-              <span className="flex items-center gap-1">
-                <Phone size={12} /> {adminData.phoneNum || "No Phone"}
-              </span>
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              setTempAdminData({
+                ...adminData,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+              });
+              setShowAdminEditModal(true);
+            }}
+            className="bg-black hover:bg-zinc-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95"
+          >
+            Edit Profile Settings
+          </button>
         </div>
 
-        {/* TEACHER TABLE SECTION */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-gray-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-gray-50/30">
+        <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="p-8 border-b border-gray-50 flex flex-col lg:flex-row justify-between items-center gap-4 bg-gray-50/30">
             <div>
-              <h3 className="text-lg font-bold tracking-tight text-gray-900">
-                Manage Teacher
-              </h3>
-              <p className="text-gray-400 text-xs font-medium">
-                Manage teacher credentials and system access.
-              </p>
+              <h3 className="font-bold text-lg text-gray-800">Staff Management</h3>
+              <p className="text-xs text-gray-400 font-medium">Manage teacher records and permissions</p>
             </div>
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
-              <div className="relative flex items-center w-full md:w-96 group">
-                <Search
-                  className="absolute left-4 text-gray-400 group-focus-within:text-indigo-500"
-                  size={18}
-                />
+            <div className="flex gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                 <input
                   type="text"
-                  placeholder="Search by teacher name..."
-                  className="w-full pl-12 pr-28 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-indigo-500"
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearchTrigger()}
+                  placeholder="Search teacher..."
+                  className="border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 ring-indigo-50"
+                  onChange={(e) => setActiveSearch(e.target.value)}
                 />
-                <button
-                  onClick={handleSearchTrigger}
-                  className="absolute right-2 px-4 py-1.5 bg-black text-white text-[10px] font-bold uppercase rounded-lg"
-                >
-                  Search
-                </button>
               </div>
               <button
                 onClick={() => navigate("/admin/signup")}
-                className="flex items-center justify-center gap-3 bg-black text-white px-6 py-3 rounded-xl hover:bg-indigo-700 shadow-lg w-full md:w-auto"
+                className="bg-black text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md active:scale-95 transition-all"
               >
-                <Plus size={18} strokeWidth={2.5} />
-                <span className="text-xs font-bold uppercase">Add Teacher</span>
+                <Plus size={16} /> Add Teacher
               </button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50/80 text-[11px] font-bold uppercase text-gray-400">
+              <thead className="bg-gray-50/50 text-[11px] font-bold uppercase text-gray-400">
                 <tr>
-                  <th className="px-10 py-5">Staff Member</th>
-                  <th className="px-10 py-5">Email Address</th>
-                  <th className="px-10 py-5">Office Location</th>
-                  <th className="px-10 py-5 text-right">Settings</th>
+                  <th className="p-5 px-10">Name</th>
+                  <th className="p-5 px-10">Email</th>
+                  <th className="p-5 px-10">Address</th>
+                  <th className="p-5 text-right px-10">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -399,54 +358,20 @@ const SettingsPage = () => {
                     t.name.toLowerCase().includes(activeSearch.toLowerCase())
                   )
                   .map((t) => (
-                    <tr
-                      key={t._id}
-                      className="hover:bg-indigo-50/30 transition-all group"
-                    >
-                      <td className="px-10 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white border border-gray-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm">
-                            {t.name?.substring(0, 2).toUpperCase()}
-                          </div>
-                          <span className="font-semibold text-sm text-gray-800">
-                            {t.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-10 py-5 text-sm text-gray-500 font-medium">
-                        {t.email}
-                      </td>
-                      <td className="px-10 py-5 text-sm text-gray-400 italic font-medium">
-                        {t.address || "Global Access"}
-                      </td>
-                      <td className="px-10 py-5 text-right">
-                        <div className="flex justify-end gap-3">
-                          <button
-                            onClick={() => {
-                              setSelectedTeacher(t);
-                              setTeacherForm({
-                                name: t.name,
-                                email: t.email,
-                                address: t.address || "",
-                                phoneNum: t.phoneNum || "",
-                                password: "",
-                              });
-                              setShowEditModal(true);
-                            }}
-                            className="p-2 text-indigo-500 bg-white rounded-lg border border-gray-100 hover:bg-indigo-500 hover:text-white"
-                          >
-                            <Edit3 size={14} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedTeacher(t);
-                              setShowDeleteModal(true);
-                            }}
-                            className="p-2 text-red-500 bg-white rounded-lg border border-gray-100 hover:bg-red-500 hover:text-white"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                    <tr key={t._id} className="hover:bg-gray-50/50">
+                      <td className="p-5 px-10 font-bold text-gray-700">{t.name}</td>
+                      <td className="p-5 px-10 text-gray-500 text-sm font-medium">{t.email}</td>
+                      <td className="p-5 px-10 text-gray-400 text-sm italic">{t.address || "N/A"}</td>
+                      <td className="p-5 text-right px-10">
+                        <button
+                          onClick={() => {
+                            setSelectedTeacher(t);
+                            setShowDeleteModal(true);
+                          }}
+                          className="text-gray-300 hover:text-red-500 p-2 rounded-xl transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -456,380 +381,164 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      {/* ADMIN EDIT MODAL */}
       {showAdminEditModal && (
-        <div className="fixed inset-0 z-[2500] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-          <div
-            className="bg-white rounded-[2rem] p-10 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
-            style={arialFont}
-          >
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl scale-in-center">
             <button
-              onClick={() => {
-                setShowAdminEditModal(false);
-                setShowPasswordFields(false);
-              }}
-              className="absolute top-8 right-8 text-gray-400 hover:text-gray-900"
+              onClick={() => setShowAdminEditModal(false)}
+              className="absolute top-8 right-8 text-gray-300 hover:text-gray-900"
             >
-              <X size={24} />
+              <X />
             </button>
-
             <div className="mb-8">
-              <h3 className="text-2xl font-bold tracking-tight">My Settings</h3>
-              <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mt-1">
-                Update your personal identity & security
-              </p>
+              <h3 className="text-2xl font-black text-gray-800 tracking-tight">Profile Settings</h3>
+              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1">General Account Update</p>
             </div>
-
-            <form onSubmit={handleAdminUpdate} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
-                  Your Full Name
-                </label>
-                <input
-                  type="text"
-                  value={tempAdminData.name}
-                  onChange={(e) =>
-                    setTempAdminData({ ...tempAdminData, name: e.target.value })
-                  }
-                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
-                  Contact Number
-                </label>
-                <input
-                  type="text"
-                  value={tempAdminData.phoneNum}
-                  onChange={(e) =>
-                    setTempAdminData({
-                      ...tempAdminData,
-                      phoneNum: e.target.value,
-                    })
-                  }
-                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                />
-              </div>
-
-              <div className="space-y-1.5 border-b border-gray-50 pb-4">
-                <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  value={tempAdminData.address}
-                  onChange={(e) =>
-                    setTempAdminData({
-                      ...tempAdminData,
-                      address: e.target.value,
-                    })
-                  }
-                  className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                />
-              </div>
-
-              {/* PASSWORD SECTION */}
-              <div className="space-y-3 pt-2">
-                {!showPasswordFields ? (
-                  <div className="flex items-center justify-between bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-500 uppercase">
-                        Security
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium">
-                        Password Management
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordFields(true)}
-                      className="px-4 py-2 bg-white border border-indigo-100 text-indigo-600 text-[10px] font-bold uppercase rounded-xl hover:bg-indigo-50 transition-all shadow-sm"
-                    >
-                      Change?
-                    </button>
+            <form onSubmit={handleAdminUpdate} className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                    <input
+                      type="text" required
+                      value={tempAdminData.name}
+                      onChange={(e) => setTempAdminData({ ...tempAdminData, name: e.target.value })}
+                      className="w-full border-gray-100 bg-gray-50 p-4 pl-12 rounded-2xl outline-none font-semibold text-gray-700 focus:ring-2 ring-indigo-50 border transition-all"
+                    />
                   </div>
-                ) : (
-                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex justify-between items-center px-1">
-                      <label className="text-[11px] font-bold text-red-500 uppercase flex items-center gap-2">
-                        <Lock size={12} /> New Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowPasswordFields(false);
-                          setTempAdminData({ ...tempAdminData, password: "" });
-                        }}
-                        className="text-[10px] font-bold text-gray-400 hover:text-red-500"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter new secure password"
-                        value={tempAdminData.password}
-                        onChange={(e) =>
-                          setTempAdminData({
-                            ...tempAdminData,
-                            password: e.target.value,
-                          })
-                        }
-                        className="w-full p-4 bg-white border border-red-100 rounded-[1.2rem] text-sm font-semibold outline-none focus:ring-2 ring-red-50 pr-12"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-red-500"
-                      >
-                        {showPassword ? (
-                          <Settings2 size={18} />
-                        ) : (
-                          <Lock size={18} />
-                        )}
-                      </button>
-                    </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                    <input
+                      type="text"
+                      value={tempAdminData.phoneNum}
+                      onChange={(e) => setTempAdminData({ ...tempAdminData, phoneNum: e.target.value })}
+                      className="w-full border-gray-100 bg-gray-50 p-4 pl-12 rounded-2xl outline-none font-semibold text-gray-700 focus:ring-2 ring-indigo-50 border transition-all"
+                    />
                   </div>
-                )}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Home Address</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                    <input
+                      type="text"
+                      value={tempAdminData.address}
+                      onChange={(e) => setTempAdminData({ ...tempAdminData, address: e.target.value })}
+                      className="w-full border-gray-100 bg-gray-50 p-4 pl-12 rounded-2xl outline-none font-semibold text-gray-700 focus:ring-2 ring-indigo-50 border transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="pt-2 px-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassModal(true)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center underline-offset-4"
+                  >
+                    Do you want to reset password?
+                  </button>
+                </div>
               </div>
-
-              {/* SUBMIT BUTTON */}
               <button
                 type="submit"
                 disabled={updating}
-                className="w-full py-4 bg-[#0a035f] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-900 shadow-lg flex items-center justify-center gap-2 mt-4"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-[1.5rem] font-bold shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-2 mt-4 active:scale-95"
               >
-                {updating ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <>
-                    <Save size={18} /> Update Profile
-                  </>
-                )}
+                {updating ? <Loader2 className="animate-spin" size={20} /> : <><Save size={20} /> Save All Changes</>}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* TEACHER EDIT MODAL */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-[2500] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-[2rem] p-10 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button
-              onClick={() => {
-                setShowEditModal(false);
-                setShowTeacherPasswordFields(false);
-              }}
-              className="absolute top-8 right-8 text-gray-400 hover:text-gray-900"
-            >
-              <X size={24} />
+      {showPassModal && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full border border-gray-100 scale-in-center relative">
+            <button onClick={() => setShowPassModal(false)} className="absolute top-6 right-6 text-gray-300 hover:text-gray-900">
+              <X size={20} />
             </button>
-
-            <div className="mb-8 flex items-center gap-4">
-              <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl">
-                {teacherForm.name?.substring(0, 1).toUpperCase()}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Lock size={28} />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                  Edit Staff Profile
-                </h3>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Update credentials & notify member
-                </p>
-              </div>
+              <h4 className="text-xl font-bold text-gray-800">Reset Password</h4>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">Identity Verification Required</p>
             </div>
-
-            <form onSubmit={handleTeacherUpdate} className="space-y-4">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
-                  Full Name
-                </label>
+            <div className="space-y-3">
+              <div className="relative">
+                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
                 <input
-                  type="text"
-                  value={teacherForm.name}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, name: e.target.value })
-                  }
-                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                  required
+                  type="password"
+                  placeholder="Current Password"
+                  value={tempAdminData.currentPassword}
+                  onChange={(e) => setTempAdminData({ ...tempAdminData, currentPassword: e.target.value })}
+                  className="w-full bg-gray-50 border border-gray-100 p-4 pl-11 rounded-xl outline-none text-sm focus:ring-2 ring-indigo-50 transition-all"
                 />
               </div>
-
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
-                  Email Address
-                </label>
+              <div className="relative">
+                <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
                 <input
-                  type="email"
-                  value={teacherForm.email}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, email: e.target.value })
-                  }
-                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                  required
+                  type="password"
+                  placeholder="New Password"
+                  value={tempAdminData.newPassword}
+                  onChange={(e) => setTempAdminData({ ...tempAdminData, newPassword: e.target.value })}
+                  className="w-full bg-gray-50 border border-gray-100 p-4 pl-11 rounded-xl outline-none text-sm focus:ring-2 ring-indigo-50 transition-all"
                 />
               </div>
-
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
-                  Phone Number
-                </label>
+              <div className="relative">
+                <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
                 <input
-                  type="text"
-                  value={teacherForm.phoneNum || ""}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, phoneNum: e.target.value })
-                  }
-                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                  required
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={tempAdminData.confirmPassword}
+                  onChange={(e) => setTempAdminData({ ...tempAdminData, confirmPassword: e.target.value })}
+                  className={`w-full bg-gray-50 p-4 pl-11 rounded-xl outline-none text-sm transition-all border ${
+                    tempAdminData.confirmPassword && tempAdminData.newPassword !== tempAdminData.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-100 focus:ring-2 ring-indigo-50"
+                  }`}
                 />
               </div>
-
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-gray-50 pb-4">
-                <label className="md:w-1/3 text-[11px] font-bold text-gray-500 uppercase">
-                  Office Address
-                </label>
-                <input
-                  type="text"
-                  value={teacherForm.address}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, address: e.target.value })
-                  }
-                  className="md:w-2/3 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-indigo-50"
-                />
-              </div>
-
-              {/* TEACHER PASSWORD SECTION */}
-              <div className="space-y-3 pt-2">
-                {!showTeacherPasswordFields ? (
-                  <div className="flex items-center justify-between bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-500 uppercase">
-                        Security
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium">
-                        Reset Teacher Password
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowTeacherPasswordFields(true)}
-                      className="px-4 py-2 bg-white border border-indigo-100 text-indigo-600 text-[10px] font-bold uppercase rounded-xl hover:bg-indigo-50 transition-all shadow-sm"
-                    >
-                      Change?
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex justify-between items-center px-1">
-                      <label className="text-[11px] font-bold text-red-500 uppercase flex items-center gap-2">
-                        <Lock size={12} /> New Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowTeacherPasswordFields(false);
-                          setTeacherForm({ ...teacherForm, password: "" });
-                        }}
-                        className="text-[10px] font-bold text-gray-400 hover:text-red-500"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter new secure password"
-                        value={teacherForm.password}
-                        onChange={(e) =>
-                          setTeacherForm({
-                            ...teacherForm,
-                            password: e.target.value,
-                          })
-                        }
-                        className="w-full p-4 bg-white border border-red-100 rounded-[1.2rem] text-sm font-semibold outline-none focus:ring-2 ring-red-50 pr-12"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-red-500"
-                      >
-                        {showPassword ? (
-                          <Settings2 size={18} />
-                        ) : (
-                          <Lock size={18} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
+              {tempAdminData.confirmPassword && tempAdminData.newPassword !== tempAdminData.confirmPassword && (
+                <p className="text-[10px] text-red-500 font-bold ml-1">Passwords do not match!</p>
+              )}
               <button
-                type="submit"
-                disabled={updating}
-                className="w-full mt-4 py-4 bg-[#0a035f] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 hover:bg-indigo-900 transition-colors"
+                onClick={handleAdminUpdate}
+                disabled={updating || !tempAdminData.newPassword || tempAdminData.newPassword !== tempAdminData.confirmPassword}
+                className={`w-full p-4 rounded-xl font-bold text-sm mt-4 transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                  !tempAdminData.newPassword || tempAdminData.newPassword !== tempAdminData.confirmPassword
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                    : "bg-black text-white hover:bg-zinc-800"
+                }`}
               >
-                {updating ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Syncing...
-                  </>
-                ) : (
-                  <>
-                    <Save size={16} /> Update & Notify Teacher
-                  </>
-                )}
+                {updating ? <Loader2 className="animate-spin" size={18} /> : "Verify & Update"}
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
-      {/* DELETE MODAL */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-[2500] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
-          <div className="bg-white rounded-[1.5rem] p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-200">
-            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 size={24} />
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="bg-white p-10 rounded-[3rem] text-center max-w-sm w-full shadow-2xl border border-gray-100 scale-in-center">
+            <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 shadow-inner">
+              <Trash2 size={45} />
             </div>
-
-            <h4 className="text-lg font-bold mb-1 uppercase text-gray-900 tracking-tight">
-              Delete Account?
-            </h4>
-
-            <p className="text-xs text-gray-500 mb-6 leading-relaxed font-medium px-2">
-              Are you sure you want to remove{" "}
-              <span className="text-indigo-600 font-bold">
-                {selectedTeacher?.name}
-              </span>
-              ? This action is permanent.
+            <h3 className="font-bold text-2xl text-gray-800 mb-2">Delete Account?</h3>
+            <p className="text-gray-400 text-sm mb-10 leading-relaxed font-medium">
+              Remove <span className="text-gray-900 font-bold">{selectedTeacher?.name}</span>'s data permanently?
             </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="py-2.5 bg-gray-100 text-gray-900 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors"
-              >
-                Abort
-              </button>
+            <div className="flex gap-4">
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 bg-gray-50 text-gray-500 py-4 rounded-2xl font-bold">Cancel</button>
               <button
                 onClick={handleDeleteTeacher}
                 disabled={deleting}
-                className="w-full py-3 bg-red-600 text-white rounded-xl text-xs font-bold uppercase hover:bg-red-700 disabled:bg-red-300 flex items-center justify-center gap-2"
+                className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-red-100 transition-all active:scale-95"
               >
-                {deleting ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Deleting...
-                  </>
-                ) : (
-                  "Yes, Delete Account"
-                )}
+                {deleting ? "Removing..." : "Delete"}
               </button>
             </div>
           </div>

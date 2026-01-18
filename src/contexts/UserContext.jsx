@@ -78,6 +78,7 @@ export const UserProvider = ({ children }) => {
     try {
       await fetchCurrentUser(controller.signal);
     } catch (err) {
+      console.error("Auth bootstrap error:", err);
       // Error is handled inside fetchCurrentUser
     } finally {
       // ONLY set loading to false if this specific mount is still active
@@ -96,6 +97,7 @@ export const UserProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     refreshUser,
     logout

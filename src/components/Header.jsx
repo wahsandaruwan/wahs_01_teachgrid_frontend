@@ -1,14 +1,19 @@
-import { useUser } from '../contexts/UserContext'
+import { useUser } from "../contexts/UserContext";
 
 const Header = ({ title }) => {
-  const { user } = useUser()
+  const { user } = useUser();
 
   return (
     <header className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between shadow-sm">
       <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
       <div className="flex items-center space-x-6">
         <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -19,23 +24,34 @@ const Header = ({ title }) => {
         </button>
 
         <div className="hidden md:flex flex-col items-end text-right">
-          <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-          <span className="text-xs text-gray-500 capitalize">{user?.role || 'guest'}</span>
+          <span className="text-sm font-medium text-gray-900">
+            {user?.name}
+          </span>
+          <span className="text-xs text-gray-500 capitalize">
+            {user?.role || "guest"}
+          </span>
         </div>
 
-        <div className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold uppercase">
-          {(user?.name || 'U')
-            .split(' ')
-            .filter(Boolean)
-            .map((part) => part.charAt(0))
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
+        <div className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold uppercase overflow-hidden border border-gray-100 shadow-sm">
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            (user?.name || "U")
+              .split(" ")
+              .filter(Boolean)
+              .map((part) => part.charAt(0))
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()
+          )}
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
-
+export default Header;

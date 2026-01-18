@@ -85,6 +85,21 @@ const navItems = [
       </svg>
     )
   },
+  // Updated: Added Reports tab from your code
+  {
+    path: "/teacher/Reports",
+    label: "Reports",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 10h.01M15 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+        />
+      </svg>
+    ),
+  },
   {
     path: '/teacher/settings',
     label: 'Settings',
@@ -162,16 +177,18 @@ const TeacherNavbar = () => {
         </button>
       </div>
 
-      {/* Profile card */}
+      {/* Profile card  added the avatar */}
       <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-5 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none">
-          {(user.name || 'T')
-            .split(' ')
-            .filter(Boolean)
-            .map((part) => part.charAt(0))
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg overflow-hidden border-2 border-white dark:border-slate-700">
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            (user?.name || "T").charAt(0).toUpperCase()
+          )}
         </div>
         <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
           {user.name}
