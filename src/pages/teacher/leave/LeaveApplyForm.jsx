@@ -124,7 +124,7 @@ const LeaveApplyForm = ({ onSubmit, onCancel, isSubmitting }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-300">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">+ Apply for Leave</h2>
         <p className="text-sm text-gray-600">Submit a new leave request for approval</p>
