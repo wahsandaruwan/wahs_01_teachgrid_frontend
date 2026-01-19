@@ -105,7 +105,7 @@ const SignInPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#E5F0FF] px-4 py-6">
       <div className="text-center mb-6">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-xl overflow-hidden shadow-lg border-2 border-gray-200 flex items-center justify-center">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-xl overflow-hidden shadow-lg bg-gray-100 dark:bg-black border-2 border-gray-300 flex items-center justify-center">
           <img src={TechGridLogo} alt="TechGrid Logo" className="w-full h-full object-contain" />
         </div>
         <h2 className="text-3xl font-bold text-black mt-2">TechGrid</h2>
