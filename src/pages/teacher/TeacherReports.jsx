@@ -231,7 +231,7 @@ const TeacherReports = () => {
         
         {/* Statistics Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col">
+          <div className="bg-white p-6 rounded-xl border border-blue-200 shadow-sm flex flex-col hover:shadow-md transition-all duration-200 ">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ATTENDANCE</h3>
@@ -257,7 +257,7 @@ const TeacherReports = () => {
         </div>
 
         {/* Main Data Table Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
           <div className="p-6 border-b border-[#f1f5f9] flex flex-col xl:flex-row justify-between gap-4">
             
             {/* Tab Navigation Controls */}
@@ -301,7 +301,7 @@ const TeacherReports = () => {
           <div className="overflow-x-auto p-4">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-100 text-slate-700 text-left border-b text-[11px] uppercase italic">
+                <tr className="bg-sky-200 text-slate-700 text-left border-b text-[11px] uppercase italic">
                   <th className="px-6 py-4">Date</th>
                   {activeTab === "attendance" && (
                     <>
@@ -365,7 +365,7 @@ const TeacherReports = () => {
 
 
 const StatCard = ({ title, value, label, icon }) => (
-  <div className="bg-white p-6 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col">
+  <div className="bg-white p-6 rounded-xl border border-blue-200 shadow-sm flex flex-col hover:shadow-md transition-all duration-200">
     <div className="flex justify-between items-start mb-4">
       <div>
         <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</h3>

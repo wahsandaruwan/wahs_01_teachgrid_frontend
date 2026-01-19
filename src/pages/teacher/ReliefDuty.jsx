@@ -124,7 +124,7 @@ const ReliefDuty = () => {
         {/* Main Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {statsCards.map((item) => (
-            <div key={item.label} className="p-5 bg-white rounded-xl shadow border flex gap-3">
+            <div key={item.label} className="p-5 bg-white rounded-xl shadow border border-blue-200 flex items-center gap-4 hover:shadow-md transition">
               <div className="text-2xl">{item.icon}</div>
               <div>
                 <p className="text-sm font-semibold text-gray-700">{item.label}</p>
@@ -136,7 +136,7 @@ const ReliefDuty = () => {
         </div>
 
         {/* Duty Schedule Table */}
-        <div className="bg-white rounded-xl shadow p-6 border">
+        <div className="bg-white rounded-xl shadow p-6 border border-gray-300">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
             <h2 className="font-bold text-lg">📅 My Relief Duty Schedule</h2>
             
@@ -166,7 +166,7 @@ const ReliefDuty = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
-                <thead className="bg-gray-100 text-xs uppercase text-gray-500">
+                <thead className="bg-cyan-100 text-xs uppercase text-gray-500">
                   <tr>
                     <th className="p-3 text-left">Date</th>
                     <th className="p-3 text-left">Time</th>

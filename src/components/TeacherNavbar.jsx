@@ -147,9 +147,7 @@ const TeacherNavbar = () => {
     <aside className="fixed left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-6 transition-colors duration-300">
       {/* Header with title + theme toggle */}
       <div className="mb-8 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-          H/Meegasara Maha Vidyalaya
-        </p>
+        <h1 className="text-md font-bold uppercase tracking-[0.2em] text-black">H/Meegasara Maha Vidyalaya</h1>
 
         <button
           onClick={() => setIsDark(!isDark)}

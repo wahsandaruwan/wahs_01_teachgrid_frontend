@@ -334,7 +334,7 @@ const TeacherSettings = () => {
       />
 
       <main className="max-w-4xl mx-auto px-6 py-10 w-full flex-grow">
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] border border-garay-00 shadow-sm overflow-hidden">
           {/* Header Banner */}
           <div className="h-32 bg-gradient-to-r from-indigo-600 to-indigo-400 w-full relative">
             <div className="absolute -bottom-12 left-10">

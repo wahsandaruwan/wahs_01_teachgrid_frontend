@@ -128,7 +128,7 @@ const Timetable = () => {
           <table className="w-full border-collapse text-sm">
 
             {/* Table header */}
-            <thead className="bg-blue-600 text-white">
+            <thead className="bg-gradient-to-r from-violet-500 to-sky-500 text-white">
               <tr>
                 <th className="border p-3 text-center">Period</th>
                 {DAYS.map((day) => (

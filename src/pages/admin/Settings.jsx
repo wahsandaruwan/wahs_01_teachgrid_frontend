@@ -258,7 +258,7 @@ const SettingsPage = () => {
       )}
 
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-3xl p-8 mb-8 border border-gray-100 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
+        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-3xl p-8 mb-8 border border-gray-100 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
           <div className="flex items-center gap-6">
             <div className="relative group/avatar">
               <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden shadow-inner relative transition-transform">
@@ -269,7 +269,7 @@ const SettingsPage = () => {
                       onClick={handleRemoveAvatar}
                       className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200"
                     >
-                      <Trash2 size={24} className="text-white" />
+                      <Trash2 size={20} className="text-white" />
                     </button>
                   </>
                 ) : (
@@ -290,11 +290,11 @@ const SettingsPage = () => {
                 {adminData.name || "Administrator"}
               </h2>
               <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-2 text-gray-400 font-medium">
+                <div className="flex items-center gap-2 text-gray-800 font-medium">
                   <Mail size={13} />
                   <p className="text-xs">{adminData.email}</p>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400 font-medium">
+                <div className="flex items-center gap-2 text-gray-800 font-medium">
                   <MapPin size={13} />
                   <p className="text-xs">{adminData.address || "Add address..."}</p>
                 </div>
@@ -317,7 +317,7 @@ const SettingsPage = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-300">
           <div className="p-8 border-b border-gray-50 flex flex-col lg:flex-row justify-between items-center gap-4 bg-gray-50/30">
             <div>
               <h3 className="font-bold text-lg text-gray-800">Staff Management</h3>
@@ -344,7 +344,7 @@ const SettingsPage = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50/50 text-[11px] font-bold uppercase text-gray-400">
+              <thead className="bg-blue-200 text-[11px] font-bold uppercase text-gray-500">
                 <tr>
                   <th className="p-5 px-10">Name</th>
                   <th className="p-5 px-10">Email</th>

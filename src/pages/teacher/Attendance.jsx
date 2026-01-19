@@ -37,8 +37,8 @@ const StatusBadge = ({ status }) => {
 const Attendance = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [specificDate, setSpecificDate] = useState(""); // For single day calendar
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7)); // Default: Current Month
+  const [specificDate, setSpecificDate] = useState("");
+  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
@@ -60,7 +60,6 @@ const Attendance = () => {
     fetchMyAttendance();
   }, []);
 
-  // Filter Logic: If specificDate is picked, show that. Otherwise, show the Month.
   const filteredData = useMemo(() => {
     return attendanceData.filter((row) => {
       if (specificDate) {
@@ -93,7 +92,6 @@ const Attendance = () => {
       setIsExporting(false);
       return;
     }
-    // We export based on the selected month
     const url = `${API_BASE_URL}/api/attendance/export/pdf?date=${month}&teacherId=${teacherId}`;
     window.open(url, '_blank');
     setIsExporting(false);
@@ -106,13 +104,23 @@ const Attendance = () => {
       <Header title="My Attendance History" />
 
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <StatCard title="Monthly Rate" value={stats.rate} subtitle={`In ${month}`} icon="📊" />
-          <StatCard title="Days Attended" value={stats.presentDays} subtitle="Present + Late" icon="✅" />
-          <StatCard title="Days on Leave" value={stats.leaveDays} subtitle="Approved Leaves" icon="❌" />
+        {/* All cards in one responsive line */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard title="Monthly Rate" value={stats.rate} subtitle={`In ${month}`} icon="📊" />
+          </div>
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard title="Total Days" value={filteredData.length} subtitle="In Selected Month" icon="📅" />
+          </div>
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard title="Days Attended" value={stats.presentDays} subtitle="Present + Late" icon="✅" />
+          </div>
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard title="Days on Leave" value={stats.leaveDays} subtitle="Approved Leaves" icon="❌" />
+          </div>  
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-300">
           <div className="flex flex-wrap gap-6">
             <div className="flex flex-col">
               <label className="text-xs font-bold text-gray-400 mb-1 ml-1">FILTER BY MONTH</label>
@@ -121,7 +129,7 @@ const Attendance = () => {
                 value={month}
                 onChange={(e) => {
                     setMonth(e.target.value);
-                    setSpecificDate(""); // Reset specific day when month changes
+                    setSpecificDate("");
                 }}
                 className="cursor-pointer border border-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               />
@@ -141,7 +149,7 @@ const Attendance = () => {
                         onClick={() => setSpecificDate("")}
                         className="text-xs text-blue-600 hover:underline"
                     >
-                        Clear
+                    Clear
                     </button>
                 )}
               </div>
@@ -157,9 +165,9 @@ const Attendance = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-green-100 border-b border-gray-200">
               <tr>
                 <th className="p-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="p-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Check In</th>

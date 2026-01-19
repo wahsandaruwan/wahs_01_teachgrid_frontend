@@ -147,10 +147,10 @@ const LeaveManagement = () => {
   ];
 
   const colorClasses = {
-    blue: { border: "border-blue-100", bg: "bg-blue-100", text: "text-blue-600" },
-    green: { border: "border-green-100", bg: "bg-green-100", text: "text-green-600" },
-    yellow: { border: "border-yellow-100", bg: "bg-yellow-100", text: "text-yellow-600" },
-    purple: { border: "border-purple-100", bg: "bg-purple-100", text: "text-purple-600" },
+    blue: { border: "border-blue-200", bg: "bg-blue-100", text: "text-blue-600" },
+    green: { border: "border-blue-200", bg: "bg-green-100", text: "text-green-600" },
+    yellow: { border: "border-blue-200", bg: "bg-yellow-100", text: "text-yellow-600" },
+    purple: { border: "border-blue-200", bg: "bg-purple-100", text: "text-purple-600" },
   };
 
   return (

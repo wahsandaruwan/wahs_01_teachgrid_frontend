@@ -108,7 +108,7 @@ const AdminNavbar = () => {
   return (
     <aside className="fixed left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-6 transition-colors duration-300">
       <div className="mb-8 flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">H/Meegasara Maha Vidyalaya</p>
+        <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-black">H/Meegasara Maha Vidyalaya</h1>
         
         {/* Dark Mode Toggle Button */}
         <button 
@@ -129,7 +129,7 @@ const AdminNavbar = () => {
 
       <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-5 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden">
-          {/* Updated the Avatar display section here */}
+        
           {user.avatar ? (
             <img 
               src={user.avatar} 

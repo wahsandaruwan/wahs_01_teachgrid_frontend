@@ -328,7 +328,7 @@ const Timetable = () => {
             {/* Submit button spans full width on mobile */}
             <button
               type="submit"
-              className="md:col-span-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-6 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+              className="md:col-span-3 bg-gradient-to-r from-violet-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-6 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
             >
               ➕ Add Entry
             </button>
@@ -339,7 +339,7 @@ const Timetable = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-50">
           <table className="w-full border-collapse text-sm">
             {/* Table header with days of week */}
-            <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <thead className="bg-gradient-to-r from-violet-500 to-sky-500 text-white">
               <tr>
                 <th className="border p-4 text-center font-semibold">Period</th>
                 {DAYS.map((day) => (

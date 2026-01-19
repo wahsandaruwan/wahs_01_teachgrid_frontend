@@ -146,7 +146,7 @@ const AdminReliefAssignment = () => {
       <section className="min-h-screen bg-[#F7F8FC] px-6 pb-10 pt-6">
         
         {/* Date Selection Bar */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-2xl border border-blue-200 shadow-sm">
             <div>
                 <label className="text-sm font-medium text-slate-600 block mb-1">Select View Date</label>
                 <input 
@@ -196,21 +196,21 @@ const AdminReliefAssignment = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm hover:shadow-md transition">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Daily Total</p>
             <p className="mt-3 text-3xl font-semibold text-slate-900">{loading ? '—' : summary.totalAssignments}</p>
           </article>
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm hover:shadow-md transition">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Daily Assigned</p>
             <p className="mt-3 text-3xl font-semibold text-slate-900">{loading ? '—' : summary.assigned}</p>
           </article>
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm hover:shadow-md transition">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Daily Pending</p>
             <p className="mt-3 text-3xl font-semibold text-slate-900">{loading ? '—' : summary.unassigned}</p>
           </article>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-2xl border border-gray-300 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-indigo-50 p-3 text-indigo-600">
@@ -227,7 +227,7 @@ const AdminReliefAssignment = () => {
 
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
+              <thead className="bg-sky-100">
                 <tr>
                   {['Slot', 'Grade', 'Subject', 'Absent Teacher', 'Relief Teacher', 'Status', 'Actions'].map((column) => (
                     <th key={column} className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{column}</th>

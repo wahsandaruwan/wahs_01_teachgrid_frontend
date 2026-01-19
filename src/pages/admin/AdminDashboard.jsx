@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { Users, UserCheck, UserX, Clock, TrendingUp, Bell } from "lucide-react";
+import { 
+  Users, 
+  UserCheck, 
+  UserX, 
+  Clock, 
+  TrendingUp, 
+  Bell,
+  Users as UsersIcon,    
+  CalendarDays,         
+  FileText,             
+  UserPlus              
+} from "lucide-react";
 import Header from "../../components/Header";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -58,6 +69,20 @@ const AdminDashboard = () => {
     unmarked: { bg: "bg-gray-50", border: "border-gray-300", text: "text-gray-600", dot: "bg-gray-400" }
   };
 
+  // Sort teachers: present first, then late, then leave, then unmarked last
+  const sortedTeachers = [...teacherAvailability].sort((a, b) => {
+    const order = { present: 1, late: 2, leave: 3, unmarked: 4 };
+    return (order[a.status] || 5) - (order[b.status] || 5);
+  });
+
+  const statsCards = [
+    { title: "Total Teachers", value: totalTeachers, color: "text-gray-900", icon: UsersIcon },
+    { title: "Present Today", value: attendanceSummary.present, color: "text-green-600", sub: "(Present + Late)", icon: UserCheck },
+    { title: "On Leave", value: attendanceSummary.leave, color: "text-orange-600", icon: CalendarDays },
+    { title: "Pending Leave", value: pendingLeaveCount, color: "text-red-600", icon: FileText },
+    { title: "Pending Relief", value: pendingReliefCount, color: "text-indigo-600", icon: UserPlus }
+  ];
+
   return (
     <div className="min-h-screen bg-[#F7F8FC]">
       <Header title="Admin Dashboard" />
@@ -73,19 +98,25 @@ const AdminDashboard = () => {
 
         {/* STATS CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-          {[
-            { title: "Total Teachers", value: totalTeachers, color: "text-gray-900" },
-            { title: "Present Today", value: attendanceSummary.present, color: "text-green-600", sub: "(Present + Late)" },
-            { title: "On Leave", value: attendanceSummary.leave, color: "text-orange-600" },
-            { title: "Pending Leave", value: pendingLeaveCount, color: "text-red-600" },
-            { title: "Pending Relief", value: pendingReliefCount, color: "text-indigo-600" }
-          ].map((card, i) => (
-            <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-indigo-200 hover:shadow-md transition">
-              <h3 className="text-gray-600 font-medium mb-2">{card.title}</h3>
-              <p className={`text-4xl font-bold ${card.color}`}>{loading ? "..." : card.value}</p>
-              {card.sub && <p className="text-xs text-gray-500 mt-1">{card.sub}</p>}
-            </div>
-          ))}
+          {statsCards.map((card, i) => {
+            const Icon = card.icon;
+            return (
+              <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-indigo-200 hover:shadow-md transition-all group">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-gray-600 font-medium mb-2 text-sm">{card.title}</h3>
+                    <p className={`text-3xl font-bold ${card.color} group-hover:scale-105 transition-transform duration-200`}>
+                      {loading ? "..." : card.value}
+                    </p>
+                    {card.sub && <p className="text-xs text-gray-500 mt-1">{card.sub}</p>}
+                  </div>
+                  <div className="p-2 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl group-hover:scale-110 transition-all duration-200">
+                    <Icon className={`w-6 h-6 ${card.color} opacity-80`} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* QUICK ACTIONS */}
@@ -101,7 +132,7 @@ const AdminDashboard = () => {
         <div className="bg-white rounded-3xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6">Teacher Availability Today</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {teacherAvailability.map((teacher, i) => {
+            {sortedTeachers.map((teacher, i) => {
               const Icon = getStatusIcon(teacher.status);
               const style = statusStyle[teacher.status];
               return (

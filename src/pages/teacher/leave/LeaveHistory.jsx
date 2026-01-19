@@ -2,7 +2,7 @@ import { CheckCircle, Clock } from 'lucide-react'
 
 const LeaveHistory = ({ leaveHistory = [] }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-300">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">My Leave History</h2>
         <p className="text-sm text-gray-600">Track the status of your leave requests</p>
@@ -11,7 +11,7 @@ const LeaveHistory = ({ leaveHistory = [] }) => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b-2 border-gray-100">
+            <tr className="border-b-2 border-gray-100 bg-cyan-100">
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Dates</th>
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Days</th>

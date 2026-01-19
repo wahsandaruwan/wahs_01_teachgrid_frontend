@@ -77,28 +77,34 @@ const LeaveManagement = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="border border-blue-200 rounded-xl hover:shadow-md transition">  
           <StatCard
             title="Pending Requests"
             value={stats.pendingRequests}
             subtitle="Awaiting approval"
-            icon={<Calendar className="text-gray-400" size={20} />}
+            icon={<Calendar className="text-blue-400" size={25} />}
           />
+          </div>
+          <div className="border border-blue-300 rounded-xl hover:shadow-md transition">
           <StatCard
             title="Approved Today"
             value={stats.approvedToday}
             subtitle="Requests approved"
-            icon={<CheckCircle2 className="text-green-500" size={20} />}
+            icon={<CheckCircle2 className="text-green-500" size={25} />}
           />
+          </div>
+          <div className="border border-blue-300 rounded-xl hover:shadow-md transition">
           <StatCard
             title="Rejected Today"
             value={stats.rejectedToday}
             subtitle="Requests rejected"
-            icon={<Clock className="text-orange-500" size={20} />}
+            icon={<Clock className="text-orange-500" size={25} />}
           />
-        </div>
+          </div>
+      </div>
 
         {/* Leave Requests Table Card */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-3s00 overflow-hidden">
           <div className="p-6 border-b border-gray-50">
             <div className="flex items-center gap-2 mb-1">
               <FileText className="text-gray-900" size={24} />
@@ -110,7 +116,7 @@ const LeaveManagement = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left min-w-max border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-violet-100 border-b border-violet-400">
                   <th className="px-4 py-3 text-sm font-semibold text-gray-600">Teacher</th>
                   <th className="px-4 py-3 text-sm font-semibold text-gray-600">Type</th>
                   <th className="px-4 py-3 text-sm font-semibold text-gray-600">Dates</th>

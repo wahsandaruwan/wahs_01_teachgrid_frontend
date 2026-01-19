@@ -521,14 +521,46 @@ const Attendance = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard title="Overall Rate" value={stats.overallRate} subtitle="School average" icon={<CheckCircle className="text-green-500" />} />
-          <StatCard title="Present Today" value={stats.presentToday.toString()} subtitle={`Out of ${stats.total}`} icon={<CheckCircle className="text-green-500" />} />
-          <StatCard title="On Leave" value={stats.onLeave.toString()} subtitle="Approved" icon={<XCircle className="text-red-500" />} />
-          <StatCard title="Late Arrivals" value={stats.lateArrivals.toString()} subtitle="After 7:30 AM" icon={<Clock className="text-yellow-500" />} />
+
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard
+              title="Overall Rate"
+              value={stats.overallRate}
+              subtitle="School average"
+              icon={<CheckCircle className="text-green-500" />}
+            />
+          </div>
+
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard
+              title="Present Today"
+              value={stats.presentToday.toString()}
+              subtitle={`Out of ${stats.total}`}
+              icon={<CheckCircle className="text-green-500" />}
+            />
+          </div>
+
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard
+              title="On Leave"
+              value={stats.onLeave.toString()}
+              subtitle="Approved"
+              icon={<XCircle className="text-red-500" />}
+            />
+          </div>
+
+          <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
+            <StatCard
+              title="Late Arrivals"
+              value={stats.lateArrivals.toString()}
+              subtitle="After 7:30 AM"
+              icon={<Clock className="text-yellow-500" />}
+            />
+          </div>
         </div>
 
         {/* Table Card */}
-        <div className="rounded-2xl bg-white p-6 shadow">
+        <div className="rounded-2xl bg-white p-6 shadow border border-gray-300">
 
           {/* Controls */}
           <div className="flex flex-wrap gap-4 justify-between mb-4">
@@ -597,7 +629,7 @@ const Attendance = () => {
                 <CheckCircle size={16} /> Marked Attendance ({markedTeachers.length})
               </h3>
               <table className="w-full border-collapse">
-                <thead className="text-xs text-slate-500 border-b bg-green-50">
+                <thead className="text-xs text-slate-500 border-b bg-green-100">
                   <tr>
                     <th className="py-3 text-left align-middle">Teacher</th>
                     <th className="align-middle text-center">Date</th>

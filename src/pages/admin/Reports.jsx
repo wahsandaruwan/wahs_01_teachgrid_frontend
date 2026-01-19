@@ -412,7 +412,7 @@ const Reports = () => {
 
 // Sub Components
 const StatCard = ({ title, value, icon, color }) => (
-  <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+  <div className="bg-white p-6 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200 ">
     <div className={`flex justify-between mb-2 ${color}`}>
       {icon}{" "}
       <span className="text-black font-bold text-xs uppercase">{title}</span>
@@ -452,7 +452,7 @@ const Table = ({ data, type }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
-        <thead className="bg-gray-50 text-gray-400 text-[11px] uppercase font-bold tracking-widest border-b border-gray-100">
+        <thead className="bg-cyan-100 text-gray-400 text-[11px] uppercase font-bold tracking-widest border-b border-gray-300">
           <tr>
             {columns[type].map((c) => (
               <th key={c} className="px-6 py-5">
