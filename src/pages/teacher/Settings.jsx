@@ -417,7 +417,7 @@ const TeacherSettings = () => {
             <form onSubmit={handleUpdate} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-black uppercase tracking-widest">
                     Full Name
                   </label>
                   {isEditing ? (
@@ -437,7 +437,7 @@ const TeacherSettings = () => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-black uppercase tracking-widest">
                     Phone
                   </label>
                   {isEditing ? (
@@ -460,7 +460,7 @@ const TeacherSettings = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-black uppercase tracking-widest">
                   Address
                 </label>
                 {isEditing ? (

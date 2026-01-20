@@ -27,8 +27,8 @@ const AdminDashboard = () => {
   const [teacherAvailability, setTeacherAvailability] = useState([]);
 
   const quickActions = [
-    { title: "Add Teacher", path: "/admin/signup", bg: "bg-violet-100", hover: "hover:bg-violet-200", border: "border-violet-200", text: "text-violet-700", icon: Users },
-    { title: "Relief Assign", path: "/admin/relief-assignment", bg: "bg-lime-50", hover: "hover:bg-lime-100", border: "border-lime-200", text: "text-lime-700", icon: Users },
+    { title: "Add User", path: "/admin/signup", bg: "bg-violet-100", hover: "hover:bg-violet-200", border: "border-violet-200", text: "text-violet-700", icon: Users },
+    { title: "Relief Assign", path: "/admin/relief-assignment", bg: "bg-cyan-100", hover: "hover:bg-cyan-200", border: "border-cyan-200", text: "text-cyan-700", icon: Users },
     { title: "View Reports", path: "/admin/reports", bg: "bg-purple-100", hover: "hover:bg-purple-200", border: "border-purple-200", text: "text-purple-700", icon: TrendingUp },
     { title: "Announcements", path: "/admin/announcements", bg: "bg-blue-100", hover: "hover:bg-blue-200", border: "border-blue-300", text: "text-blue-800", icon: Bell }
   ];
@@ -76,7 +76,7 @@ const AdminDashboard = () => {
   });
 
   const statsCards = [
-    { title: "Total Teachers", value: totalTeachers, color: "text-gray-900", icon: UsersIcon },
+    { title: "Total Teachers", value: totalTeachers, color: "text-gray-600", icon: UsersIcon },
     { title: "Present Today", value: attendanceSummary.present, color: "text-green-600", sub: "(Present + Late)", icon: UserCheck },
     { title: "On Leave", value: attendanceSummary.leave, color: "text-orange-600", icon: CalendarDays },
     { title: "Pending Leave", value: pendingLeaveCount, color: "text-red-600", icon: FileText },
@@ -89,12 +89,6 @@ const AdminDashboard = () => {
 
       <section className="p-8 space-y-8">
         {error && <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-red-700 text-sm">{error}</div>}
-
-        {/* ADMIN OVERVIEW */}
-        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-2xl p-8 text-white shadow-lg">
-          <h2 className="text-3xl font-bold mb-2">Admin Overview</h2>
-          <p className="text-purple-100">Manage your school's teaching staff and operations.</p>
-        </div>
 
         {/* STATS CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">

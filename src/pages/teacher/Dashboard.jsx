@@ -101,7 +101,7 @@ const ReliefDuties = ({ data }) => {
         Upcoming Relief Duty
       </h3>
 
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200 mb-6">
+      <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-200 dark:to-blue-100 p-5 rounded-xl border border-blue-200 mb-6">
         <div className="flex justify-between items-start">
           <div>
             <p className="font-semibold text-lg text-gray-800 mb-1">
@@ -149,7 +149,7 @@ const AnnouncementPreview = ({ data }) => {
           </div>
         ) : (
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-purple-50 to-purple-50 p-5 rounded-xl border-l-4 border-red-400">
+            <div className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-200 dark:to-purple-100 p-5 rounded-xl border-l-4 border-red-400">
               <h4 className="font-bold text-lg text-gray-900 mb-3 leading-tight">
                 {data.title}
               </h4>
@@ -215,15 +215,6 @@ function Dashboard() {
       <Header title="Teacher Dashboard" />
 
       <main className="p-8 space-y-8 min-h-screen bg-[#F7F8FC]">
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-2xl p-8 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <h2 className="text-3xl font-bold mb-2">Welcome to Your Dashboard</h2>
-          <p className="text-purple-100 text-lg">
-            Manage your teaching schedule and responsibilities
-          </p>
-        </div>
-
-        {/* Overview Section */}
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatBox

@@ -452,7 +452,7 @@ const Table = ({ data, type }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
-        <thead className="bg-cyan-100 text-gray-400 text-[11px] uppercase font-bold tracking-widest border-b border-gray-300">
+        <thead className="bg-cyan-100 dark:bg-cyan-200 text-gray-400 text-[11px] uppercase font-bold tracking-widest border-b border-gray-300">
           <tr>
             {columns[type].map((c) => (
               <th key={c} className="px-6 py-5">

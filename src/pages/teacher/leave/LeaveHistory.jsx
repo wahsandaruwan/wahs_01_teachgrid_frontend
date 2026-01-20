@@ -11,7 +11,7 @@ const LeaveHistory = ({ leaveHistory = [] }) => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b-2 border-gray-100 bg-cyan-100">
+            <tr className="border-b-2 border-gray-100 bg-cyan-100 dark:bg-cyan-200">
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Dates</th>
               <th className="text-left py-4 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">Days</th>

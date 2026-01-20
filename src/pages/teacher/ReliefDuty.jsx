@@ -166,7 +166,7 @@ const ReliefDuty = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
-                <thead className="bg-cyan-100 text-xs uppercase text-gray-500">
+                <thead className="bg-cyan-100 dark:bg-cyan-200 text-xs uppercase text-gray-500">
                   <tr>
                     <th className="p-3 text-left">Date</th>
                     <th className="p-3 text-left">Time</th>

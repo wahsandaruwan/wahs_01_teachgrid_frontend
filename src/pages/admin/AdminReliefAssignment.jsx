@@ -227,7 +227,7 @@ const AdminReliefAssignment = () => {
 
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-sky-100">
+              <thead className="bg-sky-100 dark:bg-sky-200">
                 <tr>
                   {['Slot', 'Grade', 'Subject', 'Absent Teacher', 'Relief Teacher', 'Status', 'Actions'].map((column) => (
                     <th key={column} className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{column}</th>

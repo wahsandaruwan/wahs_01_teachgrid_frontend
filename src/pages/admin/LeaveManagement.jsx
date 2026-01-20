@@ -77,7 +77,7 @@ const LeaveManagement = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="border border-blue-200 rounded-xl hover:shadow-md transition">  
+        <div className="border border-blue-300 rounded-xl hover:shadow-md transition">  
           <StatCard
             title="Pending Requests"
             value={stats.pendingRequests}

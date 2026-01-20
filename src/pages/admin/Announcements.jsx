@@ -427,7 +427,7 @@ const Announcements = () => {
 
 // Extracted reusable components
 const StatCard = ({ title, value, subtitle, icon }) => (
-  <div className="border border-blue-200 rounded-xl hover:shadow-md transition bg-white p-5 shadow-md">
+  <div className="border border-blue-300 rounded-xl hover:shadow-md transition bg-white p-5 shadow-md">
     <div className="flex items-start justify-between mb-4">
       <div>
         <p className="text-[11px] font-medium text-slate-600">{title}</p>

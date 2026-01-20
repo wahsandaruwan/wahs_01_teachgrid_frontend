@@ -510,7 +510,7 @@ const Attendance = () => {
     <>
       <Header title="Attendance Records" />
 
-      <section className="min-h-screen bg-[#F7F8FC] p-6 space-y-6">
+      <section className="min-h-screen bg-[#F7F8FC] p-4 sm:p-6 space-y-6 w-full max-w-full overflow-x-hidden">
 
         {/* Error Message */}
         {error && (
@@ -563,20 +563,21 @@ const Attendance = () => {
         <div className="rounded-2xl bg-white p-6 shadow border border-gray-300">
 
           {/* Controls */}
-          <div className="flex flex-wrap gap-4 justify-between mb-4">
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search teachers..."
-                className="w-full rounded-lg border bg-slate-50 pl-10 py-2 text-sm focus:outline-none focus:ring"
-              />
-            </div>
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+              <div className="relative w-full sm:w-72 min-w-0 flex-shrink-0">
+                <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search teachers..."
+                  className="w-full rounded-lg border bg-slate-50 pl-10 py-2 text-sm focus:outline-none focus:ring min-w-0"
+                />
+              </div>
 
-            <div className="flex gap-2">
-               <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm bg-white">
-                <Calendar size={16} className="text-slate-500" />
+              <div className="flex flex-col sm:flex-row gap-2 flex-wrap items-stretch sm:items-center">
+               <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm bg-white min-w-0">
+                <Calendar size={16} className="text-slate-500 flex-shrink-0" />
                 <input
                   type="date"
                   value={selectedDate}
@@ -586,50 +587,53 @@ const Attendance = () => {
                     setError(null) // Clear errors
                   }}
                   max={new Date().toISOString().split('T')[0]} // Prevent future dates
-                  className="outline-none bg-transparent"
+                  className="outline-none bg-transparent min-w-0 flex-1"
                 />
               </div>
               {!isToday() && (
-                <div className="flex items-center px-3 py-2 text-xs text-orange-600 bg-orange-50 rounded-lg">
+                <div className="flex items-center px-3 py-2 text-xs text-orange-600 bg-orange-50 rounded-lg whitespace-nowrap">
                   {isFutureDate() ? 'Future dates cannot be selected' : 'View-only mode (past date)'}
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button 
                   onClick={() => handleExport('csv')}
-                  className="flex items-center gap-2 rounded-lg bg-black text-white px-3 py-2 text-sm hover:bg-gray-800"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white px-3 py-2 text-sm hover:bg-gray-800 whitespace-nowrap flex-1 sm:flex-initial justify-center"
                   disabled={loading}
                 >
                   <Download size={16}/>Export CSV
                 </button>
                 <button 
                   onClick={() => handleExport('pdf')}
-                  className="flex items-center gap-2 rounded-lg bg-gray-700 text-white px-3 py-2 text-sm hover:bg-gray-600"
+                  className="flex items-center gap-2 rounded-lg bg-gray-700 text-white px-3 py-2 text-sm hover:bg-gray-600 whitespace-nowrap flex-1 sm:flex-initial justify-center"
                   disabled={loading}
                 >
                   <Download size={16}/>Export PDF
                 </button>
               </div>
+              </div>
             </div>
-            </div>
+          </div>
           
 
           {/* Summary Info */}
-          <div className="flex gap-4 mb-4 text-sm text-slate-600">
-            <span>Total: <strong>{filtered.length}</strong></span>
-            <span>Marked: <strong className="text-green-600">{markedTeachers.length}</strong></span>
-            <span>Pending: <strong className="text-orange-600">{unmarkedTeachers.length}</strong></span>
+          <div className="flex flex-wrap gap-4 mb-4 text-sm text-slate-600">
+            <span className="whitespace-nowrap">Total: <strong>{filtered.length}</strong></span>
+            <span className="whitespace-nowrap">Marked: <strong className="text-green-600">{markedTeachers.length}</strong></span>
+            <span className="whitespace-nowrap">Pending: <strong className="text-orange-600">{unmarkedTeachers.length}</strong></span>
           </div>
 
           {/* Marked Teachers Section */}
           {markedTeachers.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-green-700 mb-3 flex items-center gap-2">
-                <CheckCircle size={16} /> Marked Attendance ({markedTeachers.length})
+              <h3 className="text-sm font-semibold text-green-700 mb-3 flex items-center gap-2 truncate">
+                <CheckCircle size={16} className="flex-shrink-0" /> <span className="truncate">Marked Attendance ({markedTeachers.length})</span>
               </h3>
-              <table className="w-full border-collapse">
-                <thead className="text-xs text-slate-500 border-b bg-green-100">
+              <div className="overflow-x-auto -mx-6 sm:mx-0">
+                <div className="inline-block min-w-full align-middle px-6 sm:px-0">
+              <table className="w-full border-collapse min-w-[800px]">
+                <thead className="text-xs text-slate-500 border-b bg-green-100 dark:bg-green-200">
                   <tr>
                     <th className="py-3 text-left align-middle">Teacher</th>
                     <th className="align-middle text-center">Date</th>
@@ -646,7 +650,7 @@ const Attendance = () => {
                     return (
                       <tr key={teacherId || row.id} className="hover:bg-slate-50">
 
-                    <td className="py-3 font-medium align-middle">
+                    <td className="py-3 font-medium align-middle max-w-[200px] truncate" title={row.absentTeacher}>
                       {row.absentTeacher}</td>
 
                     <td className='align-middle text-center'>
@@ -692,27 +696,27 @@ const Attendance = () => {
                       ) : row.checkOut || '-'}
                     </td>
 
-                    <td className="align-middle text-center w-24 space-x-2">
+                    <td className="align-middle text-center w-24">
                       {isEditing ? (
-                        <>
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center justify-center">
                           <button 
                             onClick={() => handleSave(teacherId)} 
-                            className="text-green-600 hover:underline"
+                            className="text-green-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                             disabled={loading}
                           >
                             Save
                           </button>
                           <button 
                             onClick={() => setEditingId(null)} 
-                            className="text-red-600 hover:underline"
+                            className="text-red-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                           >
                             Cancel
                           </button>
-                        </>
+                        </div>
                       ) : (
                         <button 
                           onClick={() => handleEdit(row)} 
-                          className="text-blue-600 hover:underline"
+                          className="text-blue-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                           disabled={!isToday() || isFutureDate()}
                           title={!isToday() ? 'Can only edit attendance for today' : isFutureDate() ? 'Cannot edit attendance for future dates' : 'Edit attendance'}
                         >
@@ -725,17 +729,21 @@ const Attendance = () => {
                   })}
                 </tbody>
               </table>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Unmarked Teachers Section */}
           {unmarkedTeachers.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-orange-700 mb-3 flex items-center gap-2">
-                <Clock size={16} /> Pending Attendance ({unmarkedTeachers.length})
+              <h3 className="text-sm font-semibold text-orange-700 mb-3 flex items-center gap-2 truncate">
+                <Clock size={16} className="flex-shrink-0" /> <span className="truncate">Pending Attendance ({unmarkedTeachers.length})</span>
               </h3>
-              <table className="w-full border-collapse">
-                <thead className="text-xs text-slate-500 border-b bg-orange-50">
+              <div className="overflow-x-auto -mx-6 sm:mx-0">
+                <div className="inline-block min-w-full align-middle px-6 sm:px-0">
+              <table className="w-full border-collapse min-w-[800px]">
+                <thead className="text-xs text-slate-500 border-b bg-orange-50 dark:bg-orange-100">
                   <tr>
                     <th className="py-3 text-left align-middle">Teacher</th>
                     <th className="align-middle text-center">Date</th>
@@ -751,7 +759,7 @@ const Attendance = () => {
                     const isEditing = editingId === teacherId
                     return (
                       <tr key={teacherId || row.id} className="hover:bg-slate-50">
-                        <td className="py-3 font-medium align-middle">
+                        <td className="py-3 font-medium align-middle max-w-[200px] truncate" title={row.absentTeacher}>
                           {row.absentTeacher}</td>
                         <td className='align-middle text-center'>
                           {row.date}</td>
@@ -792,27 +800,27 @@ const Attendance = () => {
                             />
                           ) : row.checkOut || '-'}
                         </td>
-                        <td className="align-middle text-center w-24 space-x-2">
+                        <td className="align-middle text-center w-24">
                           {isEditing ? (
-                            <>
+                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center justify-center">
                               <button 
                                 onClick={() => handleSave(teacherId)} 
-                                className="text-green-600 hover:underline"
+                                className="text-green-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                                 disabled={loading}
                               >
                                 Save
                               </button>
                               <button 
                                 onClick={() => setEditingId(null)} 
-                                className="text-red-600 hover:underline"
+                                className="text-red-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                               >
                                 Cancel
                               </button>
-                            </>
+                            </div>
                           ) : (
                             <button 
                               onClick={() => handleEdit(row)} 
-                              className="text-blue-600 hover:underline"
+                              className="text-blue-600 hover:underline text-xs sm:text-sm whitespace-nowrap"
                               disabled={!isToday() || isFutureDate()}
                               title={!isToday() ? 'Can only mark attendance for today' : isFutureDate() ? 'Cannot mark attendance for future dates' : 'Mark attendance'}
                             >
@@ -825,6 +833,8 @@ const Attendance = () => {
                   })}
                 </tbody>
               </table>
+                </div>
+              </div>
             </div>
           )}
 

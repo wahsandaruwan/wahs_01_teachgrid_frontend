@@ -106,14 +106,33 @@ const AdminNavbar = () => {
   }
 
   return (
-    <aside className="fixed left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-6 transition-colors duration-300">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-black">H/Meegasara Maha Vidyalaya</h1>
-        
-        {/* Dark Mode Toggle Button */}
-        <button 
+    <>
+      {/* Mobile drawer state (CSS-only) */}
+      <input id="admin-nav-drawer" type="checkbox" className="peer sr-only" aria-hidden="true" />
+
+      {/* Mobile top bar */}
+      <div className="fixed inset-x-0 top-0 z-[60] flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-100/95">
+        <label
+          htmlFor="admin-nav-drawer"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
+          aria-label="Open navigation menu"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </label>
+
+        <div className="min-w-0 flex-1 px-3">
+          <div className="truncate text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-black">
+            H/Meegasara Maha Vidyalaya
+          </div>
+        </div>
+
+        {/* Dark Mode Toggle (same behavior as desktop) */}
+        <button
           onClick={() => setIsDark(!isDark)}
-          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-yellow-400 dark:hover:bg-slate-800 transition-all active:scale-90"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-700 dark:hover:bg-slate-200 transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
+          title="Toggle Dark Mode"
         >
           {isDark ? (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,14 +146,44 @@ const AdminNavbar = () => {
         </button>
       </div>
 
-      <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-5 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden">
+      {/* Mobile overlay (tap to close) */}
+      <label
+        htmlFor="admin-nav-drawer"
+        className="fixed inset-0 z-[55] hidden bg-black/40 backdrop-blur-sm peer-checked:block md:hidden"
+        aria-label="Close navigation menu"
+      />
+
+      <aside className="fixed left-0 top-0 z-[70] flex h-screen w-72 flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-100 px-6 py-6 shadow-lg dark:shadow-slate-900/50 transition-transform duration-300 -translate-x-full peer-checked:translate-x-0 md:translate-x-0">
+        <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-black">
+          H/Meegasara Maha Vidyalaya
+        </h1>
         
+        {/* Dark Mode Toggle Button */}
+        <button 
+          onClick={() => setIsDark(!isDark)}
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
+          title="Toggle Dark Mode"
+        >
+          {isDark ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          ) : (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-100 p-5 text-center shadow-sm dark:shadow-slate-900/50 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white shadow-xl shadow-indigo-300/50 dark:shadow-indigo-900/50 overflow-hidden ring-2 ring-slate-100/50 dark:ring-slate-700/50">
           {user.avatar ? (
             <img 
               src={user.avatar} 
-              alt="Admin" 
-              className="h-full w-full object-cover"
+              alt={`${user.name}'s avatar`}
+              className="h-full w-full object-cover rounded-full"
             />
           ) : (
             (user.name || 'U')
@@ -143,54 +192,63 @@ const AdminNavbar = () => {
               .map((part) => part.charAt(0))
               .join('')
               .slice(0, 2)
-              .toUpperCase())}
+              .toUpperCase()
+          )}
         </div>
-        <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">{user.name}</h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
-        <span className="mt-3 inline-flex items-center rounded-full bg-slate-900 dark:bg-indigo-600 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-          {user.role}
+        <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-black truncate">{user.name}</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-800 truncate max-w-[14rem]">{user.email}</p>
+        <span className="mt-3 inline-flex items-center rounded-full bg-slate-900 dark:bg-indigo-600 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+          Admin
         </span>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto">
+      <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
+              `group flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md ${
                 isActive
-                  ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-indigo-600 dark:to-indigo-700 text-white shadow-lg shadow-slate-900/30 dark:shadow-indigo-500/50 ring-2 ring-slate-200/50 dark:ring-indigo-400/30'
+                  : 'text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:text-slate-900 dark:hover:text-white bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <span className={`mr-3 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`}>{item.icon}</span>
-                {item.label}
+                <span className={`mr-3 flex-shrink-0 transition-all ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'}`}>
+                  {item.icon}
+                </span>
+                <span className="truncate">{item.label}</span>
+                {isActive && (
+                  <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-sm" />
+                )}
               </>
             )}
           </NavLink>
         ))}
       </nav>
 
-      <button
-        type="button"
-        onClick={handleSignOut}
-        className="mt-6 flex items-center justify-center rounded-xl border border-red-200 dark:border-red-900/30 px-4 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-900/10"
-      >
-        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
-        Sign Out
-      </button>
-    </aside>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center rounded-xl border-2 border-red-200 dark:border-red-800/50 px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-md hover:shadow-red-500/10 active:scale-[0.98] bg-gradient-to-r bg-red-50/50 dark:bg-red-900/20 backdrop-blur-sm"
+        >
+          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          Sign Out
+        </button>
+      </div>
+      </aside>
+    </>
   )
 }
 

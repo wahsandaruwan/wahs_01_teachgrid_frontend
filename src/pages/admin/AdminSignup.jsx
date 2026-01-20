@@ -5,9 +5,7 @@ const AdminSignup = () => {
   // Use environment variable for API URL
   const apiUrl = import.meta.env.VITE_API_URL; 
 
-  // =========================
   // States for form fields
-  // =========================
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -17,28 +15,22 @@ const AdminSignup = () => {
   const [password, setPassword] = useState("");
   const [subject, setSubject] = useState("");
 
-  // =========================
   // UI states
-  // =========================
-  const [showPassword, setShowPassword] = useState(false); // toggle password visibility
-  const [loading, setLoading] = useState(false); // loading state during API call
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false); // show success popup
-  const [createdUserName, setCreatedUserName] = useState(""); // store name for success message
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); 
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false); 
+  const [createdUserName, setCreatedUserName] = useState(""); 
   const [responseMessage, setResponseMessage] = useState("");
   const [emailSentStatus, setEmailSentStatus] = useState(true);
 
-  // =========================
   // Error states
-  // =========================
-  const [errors, setErrors] = useState({}); // field-specific errors
-  const [generalError, setGeneralError] = useState(""); // general API/server error
+  const [errors, setErrors] = useState({}); 
+  const [generalError, setGeneralError] = useState(""); 
 
-  // =========================
   // Form Validation
-  // =========================
   const validateForm = () => {
     const newErrors = {};
-    setGeneralError(""); // reset general error
+    setGeneralError(""); 
 
     // Role validation
     if (!role) newErrors.role = "Please select a role.";
@@ -76,12 +68,10 @@ const AdminSignup = () => {
 
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // form is valid if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
-  // =========================
   // Handle form submission
-  // =========================
   const handleSignUp = async (e) => {
     e.preventDefault();
 
@@ -122,8 +112,8 @@ const AdminSignup = () => {
       if (data.success) {
         // Show success dialog
         setCreatedUserName(name);
-        setResponseMessage(data.message); // Store the "Partial Success" message
-        setEmailSentStatus(data.emailSent); // Store whether email succeeded
+        setResponseMessage(data.message); 
+        setEmailSentStatus(data.emailSent);
         setShowSuccessDialog(true);
 
         // Reset form fields
@@ -151,7 +141,7 @@ const AdminSignup = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#E5F0FF] px-4 py-6">
       {/* Logo Section */}
       <div className="text-center mb-6">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-xl overflow-hidden shadow-lg border-2 border-gray-200 flex items-center justify-center">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-xl overflow-hidden shadow-lg border-2 border-gray-200 flex items-center justify-center bg-gray-50 dark:bg-black">
           <img
             src={TechGridLogo}
             alt="TechGrid Logo"
@@ -176,9 +166,6 @@ const AdminSignup = () => {
           <p className="text-red-500 text-sm mb-3 text-center">{generalError}</p>
         )}
 
-        {/* =========================
-            Form Fields
-        ========================= */}
         <form onSubmit={handleSignUp} className="space-y-4">
           {/* Role */}
           <div>
@@ -338,9 +325,7 @@ const AdminSignup = () => {
         </form>
       </div>
 
-      {/* =========================
-          Success Dialog
-      ========================= */}
+      {/* Success Dialog */}
       {showSuccessDialog && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
@@ -361,7 +346,7 @@ const AdminSignup = () => {
             </h3>
             
             <p className="text-gray-600 mb-6">
-              {responseMessage} {/* This displays the "Account created but email failed" message */}
+              {responseMessage}
             </p>
 
             <button

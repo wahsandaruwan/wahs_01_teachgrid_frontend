@@ -258,7 +258,7 @@ const SettingsPage = () => {
       )}
 
       <div className="max-w-6xl mx-auto">
-        <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 rounded-3xl p-8 mb-8 border border-gray-100 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
+        <div className="bg-white dark:bg-gray-300 rounded-3xl p-8 mb-8 border border-blue-300 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
           <div className="flex items-center gap-6">
             <div className="relative group/avatar">
               <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden shadow-inner relative transition-transform">
@@ -290,11 +290,11 @@ const SettingsPage = () => {
                 {adminData.name || "Administrator"}
               </h2>
               <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-2 text-gray-800 font-medium">
+                <div className="flex items-center gap-2 text-gray-500 font-medium">
                   <Mail size={13} />
                   <p className="text-xs">{adminData.email}</p>
                 </div>
-                <div className="flex items-center gap-2 text-gray-800 font-medium">
+                <div className="flex items-center gap-2 text-gray-500 font-medium">
                   <MapPin size={13} />
                   <p className="text-xs">{adminData.address || "Add address..."}</p>
                 </div>
@@ -335,9 +335,9 @@ const SettingsPage = () => {
               </div>
               <button
                 onClick={() => navigate("/admin/signup")}
-                className="bg-black text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md active:scale-95 transition-all"
+                className="bg-gray-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md active:scale-95 transition-all"
               >
-                <Plus size={16} /> Add Teacher
+                <Plus size={16} /> Add User
               </button>
             </div>
           </div>
