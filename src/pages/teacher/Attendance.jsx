@@ -103,7 +103,7 @@ const Attendance = () => {
     <main className="bg-gray-50 min-h-screen">
       <Header title="My Attendance History" />
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full overflow-x-hidden">
         {/* All cards in one responsive line */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="border border-blue-200 rounded-xl hover:shadow-md transition">
@@ -120,10 +120,10 @@ const Attendance = () => {
           </div>  
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-300">
-          <div className="flex flex-wrap gap-6">
-            <div className="flex flex-col">
-              <label className="text-xs font-bold text-gray-400 mb-1 ml-1">FILTER BY MONTH</label>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-300">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 w-full sm:w-auto">
+            <div className="flex flex-col min-w-0 flex-1 sm:flex-initial">
+              <label className="text-xs font-bold text-gray-400 mb-1 ml-1 truncate">FILTER BY MONTH</label>
               <input
                 type="month"
                 value={month}
@@ -131,23 +131,23 @@ const Attendance = () => {
                     setMonth(e.target.value);
                     setSpecificDate("");
                 }}
-                className="cursor-pointer border border-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full cursor-pointer border border-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-xs font-bold text-gray-400 mb-1 ml-1">FIND SPECIFIC DATE</label>
-              <div className="flex gap-2">
+            <div className="flex flex-col min-w-0 flex-1 sm:flex-initial">
+              <label className="text-xs font-bold text-gray-400 mb-1 ml-1 truncate">FIND SPECIFIC DATE</label>
+              <div className="flex gap-2 items-center">
                 <input
                   type="date"
                   value={specificDate}
                   onChange={(e) => setSpecificDate(e.target.value)}
-                  className="cursor-pointer border border-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="flex-1 min-w-0 cursor-pointer border border-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
                 {specificDate && (
                     <button 
                         onClick={() => setSpecificDate("")}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-xs text-blue-600 hover:underline whitespace-nowrap flex-shrink-0"
                     >
                     Clear
                     </button>
@@ -159,14 +159,16 @@ const Attendance = () => {
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:bg-gray-400 self-end"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:bg-gray-400 text-sm sm:text-base whitespace-nowrap"
           >
             {isExporting ? "Generating..." : "Download Report"}
           </button>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+              <table className="w-full min-w-[640px]">
             <thead className="bg-green-100 dark:bg-green-200 border-b border-gray-200">
               <tr>
                 <th className="p-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
@@ -197,7 +199,9 @@ const Attendance = () => {
                 </tr>
               )}
             </tbody>
-          </table>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </main>
