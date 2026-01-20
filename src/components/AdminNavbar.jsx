@@ -106,8 +106,55 @@ const AdminNavbar = () => {
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-100 px-6 py-6 transition-all duration-300 shadow-lg dark:shadow-slate-900/50">
-      <div className="mb-8 flex items-center justify-between">
+    <>
+      {/* Mobile drawer state (CSS-only) */}
+      <input id="admin-nav-drawer" type="checkbox" className="peer sr-only" aria-hidden="true" />
+
+      {/* Mobile top bar */}
+      <div className="fixed inset-x-0 top-0 z-[60] flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-100/95">
+        <label
+          htmlFor="admin-nav-drawer"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
+          aria-label="Open navigation menu"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </label>
+
+        <div className="min-w-0 flex-1 px-3">
+          <div className="truncate text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-black">
+            H/Meegasara Maha Vidyalaya
+          </div>
+        </div>
+
+        {/* Dark Mode Toggle (same behavior as desktop) */}
+        <button
+          onClick={() => setIsDark(!isDark)}
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-700 dark:hover:bg-slate-200 transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
+          title="Toggle Dark Mode"
+        >
+          {isDark ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          ) : (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile overlay (tap to close) */}
+      <label
+        htmlFor="admin-nav-drawer"
+        className="fixed inset-0 z-[55] hidden bg-black/40 backdrop-blur-sm peer-checked:block md:hidden"
+        aria-label="Close navigation menu"
+      />
+
+      <aside className="fixed left-0 top-0 z-[70] flex h-screen w-72 flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-100 px-6 py-6 shadow-lg dark:shadow-slate-900/50 transition-transform duration-300 -translate-x-full peer-checked:translate-x-0 md:translate-x-0">
+        <div className="mb-8 flex items-center justify-between">
         <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-black">
           H/Meegasara Maha Vidyalaya
         </h1>
@@ -200,7 +247,8 @@ const AdminNavbar = () => {
           Sign Out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   )
 }
 

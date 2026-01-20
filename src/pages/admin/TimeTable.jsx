@@ -337,7 +337,8 @@ const Timetable = () => {
 
         {/* TIMETABLE DISPLAY TABLE */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-50">
-          <table className="w-full border-collapse text-sm">
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-max border-collapse text-sm">
             {/* Table header with days of week */}
             <thead className="bg-gradient-to-r from-violet-500 to-sky-500 text-white">
               <tr>
@@ -395,7 +396,8 @@ const Timetable = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
     </>
