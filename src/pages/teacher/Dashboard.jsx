@@ -15,7 +15,21 @@ import {
 
 const API = import.meta.env.VITE_API_BASE_URL;
 
-//StatBox Component 
+// Helpers 
+const isToday = (dateStr) => {
+  if (!dateStr) return false;
+
+  const today = new Date();
+  const date = new Date(dateStr);
+
+  return (
+    today.getDate() === date.getDate() &&
+    today.getMonth() === date.getMonth() &&
+    today.getFullYear() === date.getFullYear()
+  );
+};
+
+// StatBox
 const StatBox = ({ title, value, subtitle, icon }) => (
   <div className="bg-white p-6 rounded-xl shadow border border-blue-300 hover:shadow-md transition-shadow">
     <div className="flex justify-between items-center mb-4">
@@ -27,24 +41,21 @@ const StatBox = ({ title, value, subtitle, icon }) => (
   </div>
 );
 
-//QuickActions Component
+// QuickActions
 const QuickActions = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow border border-blue-300 hover:shadow-md transition-all duration-200">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <Activity size={20} className="text-blue-500" />
-          <p className="text-gray-600 font-semibold text-lg">Quick Actions</p>
-        </div>
-        <FileText size={20} className="text-gray-400" />
+    <div className="bg-white p-6 rounded-xl shadow border border-blue-300">
+      <div className="flex items-center gap-2 mb-6">
+        <Activity size={20} className="text-blue-500" />
+        <p className="text-gray-600 font-semibold text-lg">Quick Actions</p>
       </div>
 
       <div className="space-y-3">
         <button
           onClick={() => navigate("/teacher/leave")}
-          className="w-full border border-orange-200 rounded-3xl p-3 bg-orange-100 hover:bg-orange-200 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+          className="w-full border border-orange-200 rounded-3xl p-3 bg-orange-100 hover:bg-orange-200 transition-all flex items-center justify-center gap-2"
         >
           <Calendar size={18} className="text-orange-500" />
           Apply Leave
@@ -52,7 +63,7 @@ const QuickActions = () => {
 
         <button
           onClick={() => navigate("/teacher/attendance")}
-          className="w-full border border-green-300 rounded-3xl p-3 bg-green-100 hover:bg-green-200 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+          className="w-full border border-green-300 rounded-3xl p-3 bg-green-100 hover:bg-green-200 transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle size={18} className="text-green-500" />
           View Attendance
@@ -62,120 +73,110 @@ const QuickActions = () => {
   );
 };
 
-//ReliefDuties Component
+// ReliefDuties
 const ReliefDuties = ({ data }) => {
   const navigate = useNavigate();
 
-  if (!data) {
+  const hasTodayRelief =
+    data && isToday(data.attendance?.date);
+
+  if (!hasTodayRelief) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow border border-blue-300 hover:shadow-md transition-all duration-200">
-        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2 text-gray-800">
+      <div className="bg-white p-6 rounded-xl shadow border border-blue-300">
+        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2">
           <CalendarClock size={20} className="text-blue-500" />
-          Upcoming Relief Duty
+          Today’s Relief Duty
         </h3>
 
         <div className="text-center py-8">
           <CalendarClock size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500 font-medium">No upcoming relief duties</p>
+          <p className="text-gray-500 font-medium">
+            No relief duties scheduled for today
+          </p>
         </div>
 
         <button
           onClick={() => navigate("/teacher/relief-duty")}
-          className="mt-6 w-full border border-blue-300 py-3 rounded-3xl text-sm font-semibold bg-blue-100 hover:bg-blue-200 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+          className="w-full border border-blue-300 py-3 rounded-3xl bg-blue-100 hover:bg-blue-200 transition-all"
         >
-          <Users size={16} className="text-blue-500" />
           View All Relief Duties
         </button>
       </div>
     );
   }
 
-  const date = data.attendance?.date
-    ? new Date(data.attendance.date).toLocaleDateString()
-    : "N/A";
-
   return (
-    <div className="bg-white p-6 rounded-xl shadow border border-blue-300 hover:shadow-md transition-all duration-200">
-      <h3 className="font-semibold text-lg mb-6 flex items-center gap-2 text-gray-800">
+    <div className="bg-white p-6 rounded-xl shadow border border-blue-300">
+      <h3 className="font-semibold text-lg mb-6 flex items-center gap-2">
         <CalendarClock size={20} className="text-blue-500" />
-        Upcoming Relief Duty
+        Today’s Relief Duty
       </h3>
 
-      <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-200 dark:to-blue-100 p-5 rounded-xl border border-blue-200 mb-6">
+      <div className="bg-gradient-to-r from-blue-100 to-blue-50 p-5 rounded-xl border mb-6">
         <div className="flex justify-between items-start">
           <div>
-            <p className="font-semibold text-lg text-gray-800 mb-1">
+            <p className="font-semibold text-lg mb-1">
               {data.subject} — Class {data.grade}
             </p>
-            <p className="text-sm font-medium text-blue-600 bg-white px-3 py-1 rounded-full inline-block border">
+            <p className="text-sm bg-white px-3 py-1 rounded-full inline-block border">
               Period {data.period}
             </p>
           </div>
 
-          <span className="text-sm bg-blue-600 text-white px-3 py-2 rounded-lg font-medium ml-4">
-            {date}
+          <span className="text-sm bg-blue-600 text-white px-3 py-2 rounded-lg">
+            Today
           </span>
         </div>
       </div>
 
       <button
         onClick={() => navigate("/teacher/relief-duty")}
-        className="w-full border border-blue-300 py-3 rounded-3xl text-sm font-semibold bg-blue-100 hover:bg-blue-200 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+        className="w-full border border-blue-300 py-3 rounded-3xl bg-blue-100 hover:bg-blue-200 transition-all"
       >
-        <Users size={16} className="text-blue-500" />
         View All Relief Duties
       </button>
     </div>
   );
 };
 
-//AnnouncementPreview Component
+// AnnouncementPreview 
 const AnnouncementPreview = ({ data }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow border border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full">
+    <div className="bg-white p-6 rounded-xl shadow border border-blue-300 flex flex-col justify-between">
       <div>
-        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2 text-gray-800">
+        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2">
           <Megaphone size={20} className="text-orange-500" />
           Latest Announcement
         </h3>
 
         {!data ? (
-          <div className="text-center py-8">
-            <Megaphone size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 font-medium mb-2">No announcements available</p>
-            <p className="text-sm text-gray-400">Check back later for updates</p>
-          </div>
+          <p className="text-gray-500 text-center py-8">
+            No announcements available
+          </p>
         ) : (
-          <div className="mb-6">
-            <div className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-200 dark:to-purple-100 p-5 rounded-xl border-l-4 border-red-400">
-              <h4 className="font-bold text-lg text-gray-900 mb-3 leading-tight">
-                {data.title}
-              </h4>
-              <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-                {data.description}
-              </p>
-              <p className="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full inline-block">
-                {new Date(data.createdAt).toLocaleDateString()}
-              </p>
-            </div>
+          <div className="bg-purple-100 p-5 rounded-xl border-l-4 border-red-400">
+            <h4 className="font-bold mb-2">{data.title}</h4>
+            <p className="text-sm mb-2">{data.description}</p>
+            <p className="text-xs bg-white px-3 py-1 rounded-full inline-block">
+              {new Date(data.createdAt).toLocaleDateString()}
+            </p>
           </div>
         )}
       </div>
 
       <button
         onClick={() => navigate("/teacher/announcements")}
-        className="w-full border border-purple-300 py-3 rounded-3xl text-sm font-semibold bg-purple-100 hover:bg-purple-200 hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+        className="mt-6 w-full border border-purple-300 py-3 rounded-3xl bg-purple-100 hover:bg-purple-200 transition-all"
       >
-        <FileText size={16} className="text-orange-500" />
         View All Announcements
       </button>
     </div>
   );
 };
 
-//Main Dashboard 
+// Main Dashboard 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -184,9 +185,10 @@ function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await axios.get(`${API}/api/dashboard/teacher/dashboard`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${API}/api/dashboard/teacher/dashboard`,
+          { withCredentials: true }
+        );
         setDashboard(res.data);
       } catch {
         setError("Failed to load dashboard");
@@ -198,48 +200,36 @@ function Dashboard() {
     fetchDashboard();
   }, []);
 
-  if (loading)
-    return (
-      <p className="p-10 text-center text-gray-600 font-medium">
-        Loading dashboard...
-      </p>
-    );
-
-  if (error)
-    return (
-      <p className="p-10 text-center text-red-600 font-medium">{error}</p>
-    );
+  if (loading) return <p className="p-10 text-center">Loading dashboard...</p>;
+  if (error) return <p className="p-10 text-center text-red-600">{error}</p>;
 
   return (
     <>
       <Header title="Teacher Dashboard" />
 
       <main className="p-8 space-y-8 min-h-screen bg-[#F7F8FC]">
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatBox
-              title="Attendance"
-              value={dashboard?.presentCount + dashboard?.lateCount || 0}
-              subtitle="Present + Late"
-              icon={<TrendingUp size={20} className="text-blue-500" />}
-            />
-            <StatBox
-              title="Approved Leaves"
-              value={dashboard?.approvedLeaves || 0} 
-              subtitle="This academic year"
-              icon={<CheckCircle size={20} className="text-green-500" />}
-            />
-            <StatBox
-              title="Relief Duties"
-              value={dashboard?.reliefDuties || 0}
-              subtitle="Completed this year"
-              icon={<Users size={20} className="text-indigo-500" />}
-            />
-            <QuickActions />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatBox
+            title="Attendance"
+            value={(dashboard?.presentCount || 0) + (dashboard?.lateCount || 0)}
+            subtitle="Present + Late"
+            icon={<TrendingUp size={20} className="text-blue-500" />}
+          />
+          <StatBox
+            title="Approved Leaves"
+            value={dashboard?.approvedLeaves || 0}
+            subtitle="This academic year"
+            icon={<CheckCircle size={20} className="text-green-500" />}
+          />
+          <StatBox
+            title="Relief Duties"
+            value={dashboard?.reliefDuties || 0}
+            subtitle="Completed this year"
+            icon={<Users size={20} className="text-indigo-500" />}
+          />
+          <QuickActions />
         </div>
 
-        {/* Bottom Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ReliefDuties data={dashboard?.upcomingRelief} />
           <AnnouncementPreview data={dashboard?.latestAnnouncement} />
